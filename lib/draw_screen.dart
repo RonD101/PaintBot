@@ -1,21 +1,21 @@
-import 'dart:io';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
-class Draw extends StatefulWidget {
+class DrawerScreen extends StatefulWidget {
+  const DrawerScreen({Key? key}) : super(key: key);
+
   @override
-  _DrawState createState() => _DrawState();
+  DrawState createState() => DrawState();
 }
 
-class _DrawState extends State<Draw> {
+class DrawState extends State<DrawerScreen> {
   Color selectedColor = Colors.red;
   double strokeWidth = 3.0;
-  List<DrawingPoints> points = [];
-  bool showBottomList = false;
+  List<DrawingPoint> points = [];
+  bool displayMenu = false;
   double opacity = 1.0;
-  SelectedMode selectedMode = SelectedMode.StrokeWidth;
-  List<Color> colors = [Colors.red, Colors.green, Colors.blue];
+  MenuSelection selectedMenu = MenuSelection.strokeWidth;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,9 +23,8 @@ class _DrawState extends State<Draw> {
         padding: const EdgeInsets.all(8.0),
         child: Container(
             padding: const EdgeInsets.only(left: 60.0, right: 60.0),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.0),
-                color: const Color.fromRGBO(255, 215, 0, 1)),
+            decoration:
+                BoxDecoration(borderRadius: BorderRadius.circular(20.0), color: const Color.fromRGBO(255, 215, 0, 1)),
             child: Padding(
               padding: const EdgeInsets.all(4.0),
               child: Column(
@@ -38,48 +37,45 @@ class _DrawState extends State<Draw> {
                           icon: const Icon(Icons.line_weight),
                           onPressed: () {
                             setState(() {
-                              if (selectedMode == SelectedMode.StrokeWidth) {
-                                showBottomList = !showBottomList;
+                              if (selectedMenu == MenuSelection.strokeWidth) {
+                                displayMenu = !displayMenu;
                               }
-                              selectedMode = SelectedMode.StrokeWidth;
+                              selectedMenu = MenuSelection.strokeWidth;
                             });
                           }),
                       IconButton(
                           icon: const Icon(Icons.color_lens_outlined),
                           onPressed: () {
                             setState(() {
-                              if (selectedMode == SelectedMode.Color) {
-                                showBottomList = !showBottomList;
+                              if (selectedMenu == MenuSelection.brushColor) {
+                                displayMenu = !displayMenu;
                               }
-                              selectedMode = SelectedMode.Color;
+                              selectedMenu = MenuSelection.brushColor;
                             });
                           }),
                       IconButton(
                           icon: const Icon(Icons.settings_outlined),
                           onPressed: () {
                             setState(() {
-                              if (selectedMode == SelectedMode.Settings) {
-                                showBottomList = !showBottomList;
+                              if (selectedMenu == MenuSelection.settingMenu) {
+                                displayMenu = !displayMenu;
                               }
-                              selectedMode = SelectedMode.Settings;
+                              selectedMenu = MenuSelection.settingMenu;
                             });
                           })
                     ],
                   ),
-                  Visibility(
-                    child: (selectedMode == SelectedMode.Color)
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: getColorList())
-                        : (selectedMode == SelectedMode.StrokeWidth)
-                            ? Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: getStrokeList())
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: getSettingList()),
-                    visible: showBottomList,
-                  ),
+                  AnimatedOpacity(
+                      opacity: displayMenu ? 1 : 0,
+                      duration: const Duration(milliseconds: 600),
+                      child: Visibility(
+                        child: (selectedMenu == MenuSelection.brushColor)
+                            ? Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getColoredCircleList())
+                            : (selectedMenu == MenuSelection.strokeWidth)
+                                ? Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getWidthCircleList())
+                                : Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getSettingsList()),
+                        visible: displayMenu,
+                      ))
                 ],
               ),
             )),
@@ -88,8 +84,8 @@ class _DrawState extends State<Draw> {
         onPanUpdate: (details) {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
-            points.add(DrawingPoints(
-                location: renderBox.globalToLocal(details.globalPosition),
+            points.add(DrawingPoint(
+                pointLocation: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
@@ -100,8 +96,8 @@ class _DrawState extends State<Draw> {
         onPanStart: (details) {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
-            points.add(DrawingPoints(
-                location: renderBox.globalToLocal(details.globalPosition),
+            points.add(DrawingPoint(
+                pointLocation: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
@@ -111,7 +107,7 @@ class _DrawState extends State<Draw> {
         },
         onPanEnd: (details) {
           setState(() {
-            points.add(DrawingPoints(location: const Offset(-1, -1), paint: Paint()));
+            points.add(DrawingPoint(pointLocation: const Offset(-1, -1), paint: Paint()));
             for (var p in points) {
               p.printPoint();
             }
@@ -128,49 +124,45 @@ class _DrawState extends State<Draw> {
     );
   }
 
-  getColorList() {
-    List<Widget> listWidget = [];
-    for (Color color in colors) {
-      listWidget.add(colorCircle(color));
-    }
-    return listWidget;
+  getColoredCircleList() {
+    return [createColoredCircle(Colors.red), createColoredCircle(Colors.green), createColoredCircle(Colors.blue)];
   }
 
-  getStrokeList() {
-    return [widthSelector(3, 20, 20), widthSelector(8, 25, 25), widthSelector(13, 30, 30)];
+  getWidthCircleList() {
+    return [createWidthCircle(3, 16, 16), createWidthCircle(8, 20, 20), createWidthCircle(13, 24, 24)];
   }
 
-  getSettingList() {
+  getSettingsList() {
     return [
-      settingSelector(const Icon(Icons.undo_outlined)),
-      settingSelector(const Icon(Icons.restart_alt_outlined)),
-      settingSelector(const Icon(Icons.upload_file_outlined))
+      createSettingOption(const Icon(Icons.undo_outlined)),
+      createSettingOption(const Icon(Icons.restart_alt_outlined)),
+      createSettingOption(const Icon(Icons.upload_file_outlined))
     ];
   }
 
-  Widget colorCircle(Color color) {
+  Widget createColoredCircle(Color color) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          showBottomList = false;
+          displayMenu = false;
           selectedColor = color;
         });
       },
       child: ClipOval(
         child: Container(
-          height: 30,
-          width: 30,
+          height: 24,
+          width: 24,
           color: color,
         ),
       ),
     );
   }
 
-  Widget widthSelector(double newStrokeWidth, double height, double width) {
+  Widget createWidthCircle(double newStrokeWidth, double height, double width) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          showBottomList = false;
+          displayMenu = false;
           strokeWidth = newStrokeWidth;
         });
       },
@@ -184,48 +176,44 @@ class _DrawState extends State<Draw> {
     );
   }
 
-  Widget settingSelector(Icon selctedIcon) {
+  Widget createSettingOption(Icon selctedSetting) {
     return GestureDetector(
         onTap: () {
           setState(() {
-            if (selctedIcon.icon == Icons.restart_alt_outlined) {
+            if (selctedSetting.icon == Icons.restart_alt_outlined) {
               points.clear();
-              showBottomList = false;
-            } else if (selctedIcon.icon == Icons.undo_outlined) {
+              displayMenu = false;
+            } else if (selctedSetting.icon == Icons.undo_outlined) {
               if (points.isNotEmpty) points.removeLast();
               for (int i = points.length - 1; i >= 0; i--) {
-                if (points[i].location == const Offset(-1, -1)) {
+                if (points[i].pointLocation == const Offset(-1, -1)) {
                   break;
                 }
                 points.removeLast();
               }
-              if (points.isEmpty) showBottomList = false;
+              if (points.isEmpty) displayMenu = false;
             }
           });
         },
-        child: selctedIcon);
+        child: selctedSetting);
   }
 }
 
 class DrawingPainter extends CustomPainter {
   DrawingPainter({required this.pointsList});
-  List<DrawingPoints> pointsList;
+  List<DrawingPoint> pointsList;
 
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < pointsList.length - 1; i++) {
-      if (pointsList[i].location != const Offset(-1, -1) &&
-          pointsList[i + 1].location != const Offset(-1, -1)) {
-        canvas.drawLine(pointsList[i].location, pointsList[i + 1].location, pointsList[i].paint);
-      } else if (pointsList[i].location != const Offset(-1, -1) &&
-          pointsList[i + 1].location == const Offset(-1, -1)) {
+      var curLocation = pointsList[i].pointLocation;
+      var nextLocation = pointsList[i + 1].pointLocation;
+
+      if (curLocation != const Offset(-1, -1) && nextLocation != const Offset(-1, -1)) {
+        canvas.drawLine(curLocation, nextLocation, pointsList[i].paint);
+      } else if (curLocation != const Offset(-1, -1) && nextLocation == const Offset(-1, -1)) {
         canvas.drawPoints(
-            PointMode.points,
-            [
-              pointsList[i].location,
-              Offset(pointsList[i].location.dx + 0.1, pointsList[i].location.dy + 0.1)
-            ],
-            pointsList[i].paint);
+            PointMode.points, [curLocation, Offset(curLocation.dx + 0.1, curLocation.dy + 0.1)], pointsList[i].paint);
       }
     }
   }
@@ -234,18 +222,18 @@ class DrawingPainter extends CustomPainter {
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
 
-class DrawingPoints {
+class DrawingPoint {
   Paint paint;
-  Offset location;
-  DrawingPoints({required this.location, required this.paint});
+  Offset pointLocation;
+  DrawingPoint({required this.pointLocation, required this.paint});
 
   void printPoint() {
-    debugPrint(location.dx.toInt().toString() +
+    debugPrint(pointLocation.dx.toInt().toString() +
         "  " +
-        location.dy.toInt().toString() +
+        pointLocation.dy.toInt().toString() +
         "  " +
         paint.color.toString());
   }
 }
 
-enum SelectedMode { StrokeWidth, Color, Settings }
+enum MenuSelection { strokeWidth, brushColor, settingMenu }

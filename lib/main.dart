@@ -1,14 +1,16 @@
 import 'draw_screen.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(DrawApp());
+void main() => runApp(const PaintBotApp());
 
-class DrawApp extends StatelessWidget {
+class PaintBotApp extends StatelessWidget {
+  const PaintBotApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Draw(),
+      home: DrawerScreen(),
     );
   }
 }
