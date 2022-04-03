@@ -22,7 +22,7 @@ class _DrawState extends State<Draw> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
-            padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+            padding: const EdgeInsets.only(left: 60.0, right: 60.0),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.0),
                 color: const Color.fromRGBO(255, 215, 0, 1)),
@@ -34,42 +34,36 @@ class _DrawState extends State<Draw> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Expanded(
-                          flex: 3,
-                          child: IconButton(
-                              icon: const Icon(Icons.line_weight),
-                              onPressed: () {
-                                setState(() {
-                                  if (selectedMode == SelectedMode.StrokeWidth) {
-                                    showBottomList = !showBottomList;
-                                  }
-                                  selectedMode = SelectedMode.StrokeWidth;
-                                });
-                              })),
-                      Expanded(
-                          flex: 3,
-                          child: IconButton(
-                              icon: const Icon(Icons.color_lens_outlined),
-                              onPressed: () {
-                                setState(() {
-                                  if (selectedMode == SelectedMode.Color) {
-                                    showBottomList = !showBottomList;
-                                  }
-                                  selectedMode = SelectedMode.Color;
-                                });
-                              })),
-                      Expanded(
-                          flex: 3,
-                          child: IconButton(
-                              icon: const Icon(Icons.settings_outlined),
-                              onPressed: () {
-                                setState(() {
-                                  if (selectedMode == SelectedMode.Settings) {
-                                    showBottomList = !showBottomList;
-                                  }
-                                  selectedMode = SelectedMode.Settings;
-                                });
-                              }))
+                      IconButton(
+                          icon: const Icon(Icons.line_weight),
+                          onPressed: () {
+                            setState(() {
+                              if (selectedMode == SelectedMode.StrokeWidth) {
+                                showBottomList = !showBottomList;
+                              }
+                              selectedMode = SelectedMode.StrokeWidth;
+                            });
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.color_lens_outlined),
+                          onPressed: () {
+                            setState(() {
+                              if (selectedMode == SelectedMode.Color) {
+                                showBottomList = !showBottomList;
+                              }
+                              selectedMode = SelectedMode.Color;
+                            });
+                          }),
+                      IconButton(
+                          icon: const Icon(Icons.settings_outlined),
+                          onPressed: () {
+                            setState(() {
+                              if (selectedMode == SelectedMode.Settings) {
+                                showBottomList = !showBottomList;
+                              }
+                              selectedMode = SelectedMode.Settings;
+                            });
+                          })
                     ],
                   ),
                   Visibility(
@@ -95,7 +89,7 @@ class _DrawState extends State<Draw> {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
             points.add(DrawingPoints(
-                points: renderBox.globalToLocal(details.globalPosition),
+                location: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
@@ -107,7 +101,7 @@ class _DrawState extends State<Draw> {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
             points.add(DrawingPoints(
-                points: renderBox.globalToLocal(details.globalPosition),
+                location: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
@@ -117,7 +111,11 @@ class _DrawState extends State<Draw> {
         },
         onPanEnd: (details) {
           setState(() {
-            points.add(DrawingPoints(points: const Offset(-1, -1), paint: Paint()));
+            points.add(DrawingPoints(location: const Offset(-1, -1), paint: Paint()));
+            for (var p in points) {
+              p.printPoint();
+            }
+            debugPrint("*****************************");
           });
         },
         child: CustomPaint(
@@ -160,7 +158,6 @@ class _DrawState extends State<Draw> {
       },
       child: ClipOval(
         child: Container(
-          padding: const EdgeInsets.only(bottom: 16.0),
           height: 30,
           width: 30,
           color: color,
@@ -179,7 +176,6 @@ class _DrawState extends State<Draw> {
       },
       child: ClipOval(
         child: Container(
-          padding: const EdgeInsets.only(bottom: 16.0),
           height: height,
           width: width,
           color: Colors.black,
@@ -194,8 +190,17 @@ class _DrawState extends State<Draw> {
           setState(() {
             if (selctedIcon.icon == Icons.restart_alt_outlined) {
               points.clear();
+              showBottomList = false;
+            } else if (selctedIcon.icon == Icons.undo_outlined) {
+              if (points.isNotEmpty) points.removeLast();
+              for (int i = points.length - 1; i >= 0; i--) {
+                if (points[i].location == const Offset(-1, -1)) {
+                  break;
+                }
+                points.removeLast();
+              }
+              if (points.isEmpty) showBottomList = false;
             }
-            showBottomList = false;
           });
         },
         child: selctedIcon);
@@ -205,17 +210,22 @@ class _DrawState extends State<Draw> {
 class DrawingPainter extends CustomPainter {
   DrawingPainter({required this.pointsList});
   List<DrawingPoints> pointsList;
-  List<Offset> offsetPoints = [];
+
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < pointsList.length - 1; i++) {
-      if (pointsList[i].points != const Offset(-1, -1) && pointsList[i + 1].points != const Offset(-1, -1)) {
-        canvas.drawLine(pointsList[i].points, pointsList[i + 1].points, pointsList[i].paint);
-      } else if (pointsList[i].points != const Offset(-1, -1) && pointsList[i + 1].points == const Offset(-1, -1)) {
-        offsetPoints.clear();
-        offsetPoints.add(pointsList[i].points);
-        offsetPoints.add(Offset(pointsList[i].points.dx + 0.1, pointsList[i].points.dy + 0.1));
-        canvas.drawPoints(PointMode.points, offsetPoints, pointsList[i].paint);
+      if (pointsList[i].location != const Offset(-1, -1) &&
+          pointsList[i + 1].location != const Offset(-1, -1)) {
+        canvas.drawLine(pointsList[i].location, pointsList[i + 1].location, pointsList[i].paint);
+      } else if (pointsList[i].location != const Offset(-1, -1) &&
+          pointsList[i + 1].location == const Offset(-1, -1)) {
+        canvas.drawPoints(
+            PointMode.points,
+            [
+              pointsList[i].location,
+              Offset(pointsList[i].location.dx + 0.1, pointsList[i].location.dy + 0.1)
+            ],
+            pointsList[i].paint);
       }
     }
   }
@@ -226,8 +236,16 @@ class DrawingPainter extends CustomPainter {
 
 class DrawingPoints {
   Paint paint;
-  Offset points;
-  DrawingPoints({required this.points, required this.paint});
+  Offset location;
+  DrawingPoints({required this.location, required this.paint});
+
+  void printPoint() {
+    debugPrint(location.dx.toInt().toString() +
+        "  " +
+        location.dy.toInt().toString() +
+        "  " +
+        paint.color.toString());
+  }
 }
 
 enum SelectedMode { StrokeWidth, Color, Settings }
