@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'dart:ui';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class DrawerScreen extends StatefulWidget {
@@ -223,6 +225,13 @@ class DrawState extends State<DrawerScreen> {
                 points.removeLast();
               }
               if (points.isEmpty) displayMenu = false;
+            } else if (selctedSetting.icon == Icons.upload_file_outlined) {
+              DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
+              for (var p in points) {
+                DatabaseReference curPoint = pointsRef.push();
+                curPoint.set(p.pointLocation.dx.toString());
+              }
+              displayMenu = false;
             }
           });
         },
