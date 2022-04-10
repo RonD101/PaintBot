@@ -8,7 +8,7 @@ Future<void> main() async {
 }
 
 class PaintBotApp extends StatelessWidget {
-  final Future<FirebaseApp> _fbApp = Firebase.initializeApp();
+  final Future<FirebaseApp>? _fbApp = Firebase.initializeApp();
   PaintBotApp({Key? key}) : super(key: key);
 
   @override
@@ -19,12 +19,11 @@ class PaintBotApp extends StatelessWidget {
           future: _fbApp,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              print("something is wrong : ${snapshot.error.toString()}");
               return const Text("Something is wrong");
             } else if (snapshot.hasData) {
               return const DrawerScreen();
             } else {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator(color: Color.fromRGBO(255, 215, 0, 1), backgroundColor: Colors.white,));
             }
           },
         ));

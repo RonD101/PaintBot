@@ -1,7 +1,8 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+
+const Offset dummyPoint = Offset(-1, -1);
 
 class DrawerScreen extends StatefulWidget {
   const DrawerScreen({Key? key}) : super(key: key);
@@ -73,7 +74,7 @@ class DrawState extends State<DrawerScreen> {
       },
       onPanEnd: (details) {
         setState(() {
-          points.add(DrawingPoint(pointLocation: const Offset(-1, -1), paint: Paint()));
+          points.add(DrawingPoint(pointLocation: dummyPoint, paint: Paint()));
           for (var p in points) {
             p.printPoint();
           }
@@ -214,28 +215,46 @@ class DrawState extends State<DrawerScreen> {
         onTap: () {
           setState(() {
             if (selctedSetting.icon == Icons.restart_alt_outlined) {
-              points.clear();
-              displayMenu = false;
-            } else if (selctedSetting.icon == Icons.undo_outlined) {
-              if (points.isNotEmpty) points.removeLast();
-              for (int i = points.length - 1; i >= 0; i--) {
-                if (points[i].pointLocation == const Offset(-1, -1)) {
-                  break;
-                }
-                points.removeLast();
-              }
-              if (points.isEmpty) displayMenu = false;
-            } else if (selctedSetting.icon == Icons.upload_file_outlined) {
-              DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
-              for (var p in points) {
-                DatabaseReference curPoint = pointsRef.push();
-                curPoint.set(p.pointLocation.dx.toString());
-              }
-              displayMenu = false;
+              restartHandler();
+            }
+            if (selctedSetting.icon == Icons.undo_outlined) {
+              undoHandler();
+            }
+            if (selctedSetting.icon == Icons.upload_file_outlined) {
+              uploadHandler();
             }
           });
         },
         child: selctedSetting);
+  }
+
+  void restartHandler() {
+    points.clear();
+    displayMenu = false;
+  }
+
+  void undoHandler() {
+    if (points.isNotEmpty) {
+      points.removeLast();
+    }
+    for (int i = points.length - 1; i >= 0; i--) {
+      if (points[i].pointLocation == dummyPoint) {
+        break;
+      }
+      points.removeLast();
+    }
+    if (points.isEmpty) {
+      displayMenu = false;
+    }
+  }
+
+  void uploadHandler() {
+    DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
+    for (var p in points) {
+      DatabaseReference curPoint = pointsRef.push();
+      curPoint.set("${p.pointLocation.dx.toInt().toString()} ${p.pointLocation.dy.toInt().toString()}");
+    }
+    displayMenu = false;
   }
 }
 
@@ -249,9 +268,9 @@ class DrawingPainter extends CustomPainter {
       var curLocation = pointsList[i].pointLocation;
       var nextLocation = pointsList[i + 1].pointLocation;
 
-      if (curLocation != const Offset(-1, -1) && nextLocation != const Offset(-1, -1)) {
+      if (curLocation != dummyPoint && nextLocation != dummyPoint) {
         canvas.drawLine(curLocation, nextLocation, pointsList[i].paint);
-      } else if (curLocation != const Offset(-1, -1) && nextLocation == const Offset(-1, -1)) {
+      } else if (curLocation != dummyPoint && nextLocation == dummyPoint) {
         canvas.drawPoints(
             PointMode.points, [curLocation, Offset(curLocation.dx + 0.1, curLocation.dy + 0.1)], pointsList[i].paint);
       }
