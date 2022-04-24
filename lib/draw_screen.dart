@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'bresenham_algo.dart';
 
 const Offset dummyPoint = Offset(-1, -1);
 
@@ -234,6 +235,7 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void undoHandler() {
+    getRobotMovesFromBresenham(getBresenhamPoints(10, 1, -4, 18));  
     if (points.isNotEmpty) {
       points.removeLast();
     }
@@ -252,7 +254,7 @@ class DrawState extends State<DrawerScreen> {
     DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
     for (var p in points) {
       DatabaseReference curPoint = pointsRef.push();
-      curPoint.set("${p.pointLocation.dx.toInt().toString()} ${p.pointLocation.dy.toInt().toString()}");
+      curPoint.set("${p.pointLocation.dx.round().toString()} ${p.pointLocation.dy.round().toString()}");
     }
     displayMenu = false;
   }
@@ -287,9 +289,9 @@ class DrawingPoint {
   DrawingPoint({required this.pointLocation, required this.paint});
 
   void printPoint() {
-    debugPrint(pointLocation.dx.toInt().toString() +
+    debugPrint(pointLocation.dx.round().toString() +
         "  " +
-        pointLocation.dy.toInt().toString() +
+        pointLocation.dy.round().toString() +
         "  " +
         paint.color.toString());
   }
