@@ -22,9 +22,6 @@ class DrawState extends State<DrawerScreen> {
   Color selectedColor = Colors.red;
   double strokeWidth = 3.0;
   List<DrawingPoint> points = [];
-  List<DrawingPoint> scaledPoints = [];
-  List<Point> bresenhamPoints = [];
-  List<RobotMove> robotMoves = [];
   double xScale = 0.0;
   double yScale = 0.0;
   bool displayMenu = false;
@@ -250,14 +247,10 @@ class DrawState extends State<DrawerScreen> {
     strokeWidth = 3.0;
     selectedMenu = MenuSelection.strokeWidth;
     points.clear();
-    robotMoves.clear();
-    bresenhamPoints.clear();
-    scaledPoints.clear();
     displayMenu = false;
   }
 
   void undoHandler() {
-    getRobotMovesFromBresenham(getBresenhamPoints(5, 1, 5, 18));
     if (points.isNotEmpty) {
       points.removeLast();
     }
@@ -273,29 +266,8 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void uploadHandler() {
-    for (var cur in points) {
-      if (cur.pointLocation == dummyPoint) {
-        scaledPoints.add(DrawingPoint(pointLocation: dummyPoint, paint: cur.paint));
-      } else {
-        scaledPoints.add(DrawingPoint(
-            pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale), paint: cur.paint));
-      }
-    }
-    for (int i = 0; i < scaledPoints.length - 1; i++) {
-      var cur = scaledPoints[i].pointLocation;
-      var next = scaledPoints[i + 1].pointLocation;
-      if (cur == dummyPoint) {
-        continue;
-      }
-      if (next == dummyPoint) {
-        if (i + 2 == scaledPoints.length) {
-          continue;
-        }
-        next = scaledPoints[i + 2].pointLocation;
-      }
-      bresenhamPoints += getBresenhamPoints(cur.dx.round(), cur.dy.round(), next.dx.round(), next.dy.round());
-    }
-    robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
+    var bresenhamPoints = globalBresenhamAlgo(points, xScale, yScale);
+    var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     displayMenu = false;
     DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
     for (var move in robotMoves) {
