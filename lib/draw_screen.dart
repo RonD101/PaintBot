@@ -2,23 +2,39 @@ import 'dart:ui';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'bresenham_algo.dart';
+import 'dart:math';
 
+// 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
 const Offset dummyPoint = Offset(-1, -1);
+const double a4Width = 210;
+const double a4Height = 297;
+const double pixelToMM = 0.26458333;
 
 class DrawerScreen extends StatefulWidget {
-  const DrawerScreen({Key? key}) : super(key: key);
-
+  final double height;
+  final double width;
+  const DrawerScreen({Key? key, required this.height, required this.width}) : super(key: key);
   @override
-  DrawState createState() => DrawState();
+  DrawState createState() => DrawState(height, width);
 }
 
 class DrawState extends State<DrawerScreen> {
   Color selectedColor = Colors.red;
   double strokeWidth = 3.0;
   List<DrawingPoint> points = [];
+  List<DrawingPoint> scaledPoints = [];
+  List<Point> bresenhamPoints = [];
+  List<RobotMove> robotMoves = [];
+  double xScale = 0.0;
+  double yScale = 0.0;
   bool displayMenu = false;
   double opacity = 1.0;
   MenuSelection selectedMenu = MenuSelection.strokeWidth;
+
+  DrawState(double height, double width) {
+    xScale = a4Width / (width * pixelToMM);
+    yScale = a4Height / (height * pixelToMM);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,10 +92,10 @@ class DrawState extends State<DrawerScreen> {
       onPanEnd: (details) {
         setState(() {
           points.add(DrawingPoint(pointLocation: dummyPoint, paint: Paint()));
-          for (var p in points) {
-            p.printPoint();
-          }
-          debugPrint("************** NEW LINE ***************");
+          //for (var p in points) {
+          //p.printPoint();
+          //}
+          //debugPrint("************** NEW LINE ***************");
         });
       },
       child: CustomPaint(
@@ -230,12 +246,18 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void restartHandler() {
+    selectedColor = Colors.red;
+    strokeWidth = 3.0;
+    selectedMenu = MenuSelection.strokeWidth;
     points.clear();
+    robotMoves.clear();
+    bresenhamPoints.clear();
+    scaledPoints.clear();
     displayMenu = false;
   }
 
   void undoHandler() {
-    getRobotMovesFromBresenham(getBresenhamPoints(10, 1, -4, 18));  
+    getRobotMovesFromBresenham(getBresenhamPoints(5, 1, 5, 18));
     if (points.isNotEmpty) {
       points.removeLast();
     }
@@ -251,12 +273,35 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void uploadHandler() {
-    DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
-    for (var p in points) {
-      DatabaseReference curPoint = pointsRef.push();
-      curPoint.set("${p.pointLocation.dx.round().toString()} ${p.pointLocation.dy.round().toString()}");
+    for (var cur in points) {
+      if (cur.pointLocation == dummyPoint) {
+        scaledPoints.add(DrawingPoint(pointLocation: dummyPoint, paint: cur.paint));
+      } else {
+        scaledPoints.add(DrawingPoint(
+            pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale), paint: cur.paint));
+      }
     }
+    for (int i = 0; i < scaledPoints.length - 1; i++) {
+      var cur = scaledPoints[i].pointLocation;
+      var next = scaledPoints[i + 1].pointLocation;
+      if (cur == dummyPoint) {
+        continue;
+      }
+      if (next == dummyPoint) {
+        if (i + 2 == scaledPoints.length) {
+          continue;
+        }
+        next = scaledPoints[i + 2].pointLocation;
+      }
+      bresenhamPoints += getBresenhamPoints(cur.dx.round(), cur.dy.round(), next.dx.round(), next.dy.round());
+    }
+    robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     displayMenu = false;
+    DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
+    for (var move in robotMoves) {
+      DatabaseReference curPoint = pointsRef.push();
+      curPoint.set(move.toString());
+    }
   }
 }
 

@@ -10,10 +10,9 @@ List<Point> getBresenhamPoints(int x0, int y0, int x1, int y1) {
   var sx = (x0 < x1) ? 1 : -1;
   var sy = (y0 < y1) ? 1 : -1;
   var err = dx - dy;
-
   while (true) {
     bresenhamPoints.add(Point(x0, y0));
-    debugPrint(x0.toString() + " " + y0.toString());
+    //debugPrint(x0.toString() + " " + y0.toString());
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }
@@ -35,25 +34,25 @@ List<RobotMove> getRobotMovesFromBresenham(List<Point> bresenhamPoints) {
   for (int i = 0; i < bresenhamPoints.length - 1; i++) {
     Point cur = bresenhamPoints[i];
     Point next = bresenhamPoints[i + 1];
-    
-    if (cur.y == next.y && cur.x < next.x) {
+
+    if (cur.x < next.x && cur.y == next.y) {
       robotMoves.add(RobotMove.right);
-    } else if (cur.y == next.y && cur.x > next.x) {
+    } else if (cur.x < next.x && cur.y == next.y) {
       robotMoves.add(RobotMove.left);
     } else if (cur.x == next.x && cur.y < next.y) {
-      robotMoves.add(RobotMove.up);
-    } else if (cur.x == next.x && cur.y > next.y) {
       robotMoves.add(RobotMove.down);
+    } else if (cur.x == next.x && cur.y > next.y) {
+      robotMoves.add(RobotMove.up);
     } else if (cur.x < next.x && cur.y < next.y) {
-      robotMoves.add(RobotMove.rightUp);
-    } else if (cur.x < next.x && cur.y > next.y) {
       robotMoves.add(RobotMove.rightDown);
-    } else if (cur.x > next.x && cur.y < next.y) {
-      robotMoves.add(RobotMove.leftUp);
+    } else if (cur.x < next.x && cur.y > next.y) {
+      robotMoves.add(RobotMove.rightUp);
     } else if (cur.x > next.x && cur.y < next.y) {
       robotMoves.add(RobotMove.leftDown);
+    } else if (cur.x > next.x && cur.y > next.y) {
+      robotMoves.add(RobotMove.leftUp);
     }
-    debugPrint(robotMoves.last.toString());
+    //debugPrint(robotMoves.last.toString());
   }
   return robotMoves;
 }
