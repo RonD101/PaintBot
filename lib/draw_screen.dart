@@ -2,36 +2,25 @@ import 'dart:ui';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'bresenham_algo.dart';
-import 'dart:math';
 
 // 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
-const Offset dummyPoint = Offset(-1, -1);
-const double a4Width = 210;
-const double a4Height = 297;
-const double pixelToMM = 0.26458333;
+const Offset dummyOffset = Offset(-1, -1);
 
 class DrawerScreen extends StatefulWidget {
-  final double height;
-  final double width;
-  const DrawerScreen({Key? key, required this.height, required this.width}) : super(key: key);
+  final double xScale;
+  final double yScale;
+  const DrawerScreen({Key? key, required this.xScale, required this.yScale}) : super(key: key);
   @override
-  DrawState createState() => DrawState(height, width);
+  DrawState createState() => DrawState();
 }
 
 class DrawState extends State<DrawerScreen> {
   Color selectedColor = Colors.red;
   double strokeWidth = 3.0;
   List<DrawingPoint> points = [];
-  double xScale = 0.0;
-  double yScale = 0.0;
   bool displayMenu = false;
   double opacity = 1.0;
   MenuSelection selectedMenu = MenuSelection.strokeWidth;
-
-  DrawState(double height, double width) {
-    xScale = a4Width / (width * pixelToMM);
-    yScale = a4Height / (height * pixelToMM);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +77,7 @@ class DrawState extends State<DrawerScreen> {
       },
       onPanEnd: (details) {
         setState(() {
-          points.add(DrawingPoint(pointLocation: dummyPoint, paint: Paint()));
+          points.add(DrawingPoint(pointLocation: dummyOffset, paint: Paint()));
           //for (var p in points) {
           //p.printPoint();
           //}
@@ -255,7 +244,7 @@ class DrawState extends State<DrawerScreen> {
       points.removeLast();
     }
     for (int i = points.length - 1; i >= 0; i--) {
-      if (points[i].pointLocation == dummyPoint) {
+      if (points[i].pointLocation == dummyOffset) {
         break;
       }
       points.removeLast();
@@ -266,15 +255,15 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void uploadHandler() {
-    var bresenhamPoints = globalBresenhamAlgo(points, xScale, yScale);
+    var bresenhamPoints = globalBresenhamAlgo(points, widget.xScale, widget.yScale);
     var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
-    displayMenu = false;
-    FirebaseDatabase.instance.ref("Points").remove();
-    DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
+    FirebaseDatabase.instance.ref("RobotMoves").remove();
+    DatabaseReference pointsRef = FirebaseDatabase.instance.ref("RobotMoves");
     for (var move in robotMoves) {
       DatabaseReference curPoint = pointsRef.push();
       curPoint.set(move.toString());
     }
+    displayMenu = false;
   }
 }
 
@@ -288,9 +277,9 @@ class DrawingPainter extends CustomPainter {
       var curLocation = pointsList[i].pointLocation;
       var nextLocation = pointsList[i + 1].pointLocation;
 
-      if (curLocation != dummyPoint && nextLocation != dummyPoint) {
+      if (curLocation != dummyOffset && nextLocation != dummyOffset) {
         canvas.drawLine(curLocation, nextLocation, pointsList[i].paint);
-      } else if (curLocation != dummyPoint && nextLocation == dummyPoint) {
+      } else if (curLocation != dummyOffset && nextLocation == dummyOffset) {
         canvas.drawPoints(
             PointMode.points, [curLocation, Offset(curLocation.dx + 0.1, curLocation.dy + 0.1)], pointsList[i].paint);
       }

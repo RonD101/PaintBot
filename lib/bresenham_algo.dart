@@ -1,23 +1,22 @@
 import 'dart:math';
-import 'dart:ui';
 import 'draw_screen.dart';
 
 enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown }
+const Point dummyPoint = Point(-1, -1);
 
 List<Point> globalBresenhamAlgo(List<DrawingPoint> points, double xScale, double yScale) {
   List<Point> bresenhamPoints = [];
-  List<DrawingPoint> scaledPoints = [];
+  List<Point> scaledPoints = [];
   for (var cur in points) {
-    if (cur.pointLocation == dummyPoint) {
-      scaledPoints.add(DrawingPoint(pointLocation: dummyPoint, paint: cur.paint));
+    if (cur.pointLocation == dummyOffset) {
+      scaledPoints.add(dummyPoint);
     } else {
-      scaledPoints.add(DrawingPoint(
-          pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale), paint: cur.paint));
+      scaledPoints.add(Point(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale));
     }
   }
   for (int i = 0; i < scaledPoints.length - 1; i++) {
-    var cur = scaledPoints[i].pointLocation;
-    var next = scaledPoints[i + 1].pointLocation;
+    var cur = scaledPoints[i];
+    var next = scaledPoints[i + 1];
     if (cur == dummyPoint) {
       continue;
     }
@@ -25,9 +24,9 @@ List<Point> globalBresenhamAlgo(List<DrawingPoint> points, double xScale, double
       if (i + 2 == scaledPoints.length) {
         continue;
       }
-      next = scaledPoints[i + 2].pointLocation;
+      next = scaledPoints[i + 2];
     }
-    bresenhamPoints += localBresenhamAlgo(cur.dx.round(), cur.dy.round(), next.dx.round(), next.dy.round());
+    bresenhamPoints += localBresenhamAlgo(cur.x.round(), cur.y.round(), next.x.round(), next.y.round());
   }
   return bresenhamPoints;
 }
