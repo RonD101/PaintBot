@@ -17,33 +17,27 @@ class PaintBotApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     return MediaQuery(
         data: const MediaQueryData(),
         child: MaterialApp(
             debugShowCheckedModeBanner: false,
             home: FutureBuilder(
-              future: _fbApp,
-              builder: (context, snapshot) {
-                final double width = MediaQuery.of(context).size.width;
-                final double height = MediaQuery.of(context).size.height;
-                if (snapshot.hasError) {
-                  return const Text("Something is wrong");
-                } else if (snapshot.hasData) {
+                future: _fbApp,
+                builder: (context, snapshot) {
+                  final double width = MediaQuery.of(context).size.width;
+                  final double height = MediaQuery.of(context).size.height;
                   final double xScale = a4Width / (width * pixelToMM);
                   final double yScale = a4Height / (height * pixelToMM);
-                  return DrawerScreen(xScale: xScale, yScale: yScale);
-                } else {
-                  return const Center(
-                      child: CircularProgressIndicator(
-                    color: Color.fromRGBO(255, 215, 0, 1),
-                    backgroundColor: Colors.white,
-                  ));
-                }
-              },
-            )));
+                  if (snapshot.hasError) {
+                    return const Text("Something is wrong");
+                  } else if (snapshot.hasData) {
+                    return DrawerScreen(xScale: xScale, yScale: yScale);
+                  } else {
+                    return const Center(
+                        child: CircularProgressIndicator(
+                            color: Color.fromRGBO(255, 215, 0, 1), backgroundColor: Colors.white));
+                  }
+                })));
   }
 }
