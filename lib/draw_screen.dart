@@ -269,6 +269,7 @@ class DrawState extends State<DrawerScreen> {
     var bresenhamPoints = globalBresenhamAlgo(points, xScale, yScale);
     var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     displayMenu = false;
+    FirebaseDatabase.instance.ref("Points").remove();
     DatabaseReference pointsRef = FirebaseDatabase.instance.ref("Points");
     for (var move in robotMoves) {
       DatabaseReference curPoint = pointsRef.push();
