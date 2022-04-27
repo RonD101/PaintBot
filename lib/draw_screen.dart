@@ -225,10 +225,11 @@ class DrawState extends State<DrawerScreen> {
     var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     FirebaseDatabase.instance.ref("RobotMoves").remove();
     DatabaseReference pointsRef = FirebaseDatabase.instance.ref("RobotMoves");
-    for (var move in robotMoves) {
-      DatabaseReference curPoint = pointsRef.push();
-      curPoint.set(move.toString());
+    for (int i = 0; i < robotMoves.length; i++) {
+      pointsRef.child(i.toString()).set(robotMoves[i].index);
     }
+    DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
+    flagRef.child("flag").set("1");
     displayMenu = false;
   }
 }

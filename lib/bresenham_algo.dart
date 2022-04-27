@@ -63,7 +63,7 @@ List<RobotMove> getRobotMovesFromBresenham(List<Point> bresenhamPoints) {
     Point next = bresenhamPoints[i + 1];
     if (cur.x < next.x && cur.y == next.y) {
       robotMoves.add(RobotMove.right);
-    } else if (cur.x < next.x && cur.y == next.y) {
+    } else if (cur.x > next.x && cur.y == next.y) {
       robotMoves.add(RobotMove.left);
     } else if (cur.x == next.x && cur.y < next.y) {
       robotMoves.add(RobotMove.down);
@@ -71,11 +71,15 @@ List<RobotMove> getRobotMovesFromBresenham(List<Point> bresenhamPoints) {
       robotMoves.add(RobotMove.up);
     } else if (cur.x < next.x && cur.y < next.y) {
       robotMoves.add(RobotMove.rightDown);
+      robotMoves.add(RobotMove.rightDown);
     } else if (cur.x < next.x && cur.y > next.y) {
+      robotMoves.add(RobotMove.rightUp);
       robotMoves.add(RobotMove.rightUp);
     } else if (cur.x > next.x && cur.y < next.y) {
       robotMoves.add(RobotMove.leftDown);
+      robotMoves.add(RobotMove.leftDown);
     } else if (cur.x > next.x && cur.y > next.y) {
+      robotMoves.add(RobotMove.leftUp);
       robotMoves.add(RobotMove.leftUp);
     }
   }
