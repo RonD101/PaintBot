@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 
-const double a4Width = 210;
-const double a4Height = 297;
-const double pixelToMM = 0.26458333;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(PaintBotApp());
@@ -27,12 +24,10 @@ class PaintBotApp extends StatelessWidget {
                 builder: (context, snapshot) {
                   final double width = MediaQuery.of(context).size.width;
                   final double height = MediaQuery.of(context).size.height;
-                  final double xScale = a4Width / (width * pixelToMM);
-                  final double yScale = a4Height / (height * pixelToMM);
                   if (snapshot.hasError) {
                     return const Text("Something is wrong");
                   } else if (snapshot.hasData) {
-                    return DrawerScreen(xScale: xScale, yScale: yScale);
+                    return DrawerScreen(width: width, height: height);
                   } else {
                     return const Center(
                         child: CircularProgressIndicator(

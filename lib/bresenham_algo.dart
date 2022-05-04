@@ -3,10 +3,16 @@ import 'draw_screen.dart';
 
 enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown }
 const Point dummyPoint = Point(-1, -1);
+const double a4Width = 297;
+const double a4Height = 210;
+const double pixelToMM = 0.26458333;
 
-List<Point> globalBresenhamAlgo(List<DrawingPoint> points, double xScale, double yScale) {
+List<Point> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
+  final double xScale = a4Width / (width * pixelToMM);
+  final double yScale = a4Height / (height * pixelToMM);
   List<Point> bresenhamPoints = [];
   List<Point> scaledPoints = [];
+  // scaledPoints.add(Point(0, height * yScale)); // bresenham from robot start to first point.
   for (var cur in points) {
     if (cur.pointLocation == dummyOffset) {
       scaledPoints.add(dummyPoint);
@@ -14,6 +20,7 @@ List<Point> globalBresenhamAlgo(List<DrawingPoint> points, double xScale, double
       scaledPoints.add(Point(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale));
     }
   }
+
   for (int i = 0; i < scaledPoints.length - 1; i++) {
     var cur = scaledPoints[i];
     var next = scaledPoints[i + 1];
@@ -61,26 +68,28 @@ List<RobotMove> getRobotMovesFromBresenham(List<Point> bresenhamPoints) {
   for (int i = 0; i < bresenhamPoints.length - 1; i++) {
     Point cur = bresenhamPoints[i];
     Point next = bresenhamPoints[i + 1];
-    if (cur.x < next.x && cur.y == next.y) {
-      robotMoves.add(RobotMove.right);
-    } else if (cur.x > next.x && cur.y == next.y) {
-      robotMoves.add(RobotMove.left);
-    } else if (cur.x == next.x && cur.y < next.y) {
-      robotMoves.add(RobotMove.down);
-    } else if (cur.x == next.x && cur.y > next.y) {
-      robotMoves.add(RobotMove.up);
-    } else if (cur.x < next.x && cur.y < next.y) {
-      robotMoves.add(RobotMove.rightDown);
-      robotMoves.add(RobotMove.rightDown);
-    } else if (cur.x < next.x && cur.y > next.y) {
-      robotMoves.add(RobotMove.rightUp);
-      robotMoves.add(RobotMove.rightUp);
-    } else if (cur.x > next.x && cur.y < next.y) {
-      robotMoves.add(RobotMove.leftDown);
-      robotMoves.add(RobotMove.leftDown);
-    } else if (cur.x > next.x && cur.y > next.y) {
-      robotMoves.add(RobotMove.leftUp);
-      robotMoves.add(RobotMove.leftUp);
+    for (int j = 0; j < 3; j++) {
+      if (cur.x < next.x && cur.y == next.y) {
+        robotMoves.add(RobotMove.right);
+      } else if (cur.x > next.x && cur.y == next.y) {
+        robotMoves.add(RobotMove.left);
+      } else if (cur.x == next.x && cur.y < next.y) {
+        robotMoves.add(RobotMove.down);
+      } else if (cur.x == next.x && cur.y > next.y) {
+        robotMoves.add(RobotMove.up);
+      } else if (cur.x < next.x && cur.y < next.y) {
+        robotMoves.add(RobotMove.rightDown);
+        robotMoves.add(RobotMove.rightDown);
+      } else if (cur.x < next.x && cur.y > next.y) {
+        robotMoves.add(RobotMove.rightUp);
+        robotMoves.add(RobotMove.rightUp);
+      } else if (cur.x > next.x && cur.y < next.y) {
+        robotMoves.add(RobotMove.leftDown);
+        robotMoves.add(RobotMove.leftDown);
+      } else if (cur.x > next.x && cur.y > next.y) {
+        robotMoves.add(RobotMove.leftUp);
+        robotMoves.add(RobotMove.leftUp);
+      }
     }
   }
   return robotMoves;
