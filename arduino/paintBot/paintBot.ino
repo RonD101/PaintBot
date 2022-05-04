@@ -4,6 +4,7 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <WebSerial.h>
+#include <Vector.h>
 
 //Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -41,6 +42,8 @@ int motor2Enable = 5;
 int motor2Step = 19;
 int motor2Dir = 18;
 
+bool shouldStepMotor1 = false;
+bool shouldStepMotor2 = false;
 int led = 2;
 
 int input = 13;
@@ -56,8 +59,8 @@ void setup() {
 
   pinMode(input, INPUT);
 
-  digitalWrite(motor1Enable, HIGH);
-  digitalWrite(motor2Enable, HIGH);
+  digitalWrite(motor1Enable, LOW);
+  digitalWrite(motor2Enable, LOW);
   digitalWrite(motor1Step, LOW);
   digitalWrite(motor2Step, LOW);
   
@@ -110,62 +113,72 @@ int buttonState = 0;
 bool initLeft = true;
 bool initDown = true;
 bool waitForRealseButton = false;
+Vector<int> vec;
 
 void loop() {
-//  WebSerial.println("Hello!");
-  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 7000 || sendDataPrevMillis == 0)) {
+  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)) {
     sendDataPrevMillis = millis();
     if (Firebase.RTDB.getInt(&fbdo, "/Flag")) {
+      WebSerial.print("Got flag = ");
+      WebSerial.println(fbdo.intData());
       if (fbdo.intData() == 0)
         return;
     } else {
       Serial.println(fbdo.errorReason());
+      WebSerial.println(fbdo.errorReason());
     }
-    if (Firebase.RTDB.getArray(&fbdo, "/RobotMoves")) {
-      
-      Serial.println("Get array ok");
-     
-      FirebaseJsonArray arr = fbdo.jsonArray();
-      
-      FirebaseJsonData currValue;
-      WebSerial.print("Array size: ");
-      WebSerial.println(arr.size());
-      WebSerial.println("Start Draw!");
-      for (size_t i = 0; i < arr.size(); i++)
-        {
-          arr.get(currValue, i);
+    if (fbdo.intData() == 2) {
+      for (int elem : vec) {
+        if (elem == 0)
+          stepRight();
+        if (elem == 1)
+            stepLeft();
+        if (elem == 2)
+            stepUp();
+        if (elem == 3)
+            stepDown();
+        if (elem == 4)
+            stepRightUp();
+        if (elem == 5)
+            stepRightDown();
+        if (elem == 6)
+            stepLeftUp();
+        if (elem == 7)
+            stepLeftDown();        
+      }
+      vec = Vector<int>();
+    }
+    if (fbdo.intData() == 2) {
+      if (Firebase.RTDB.getArray(&fbdo, "/RobotMoves")) {
         
-          int realVal = currValue.to<int>();
-          for (int k = 0; k < 5; k++) {
-          if (realVal == 0)
-            stepRight();
-          if (realVal == 1)
-              stepLeft();
-          if (realVal == 2)
-              stepUp();
-          if (realVal == 3)
-              stepDown();
-          if (realVal == 4)
-              stepRightUp();
-          if (realVal == 5)
-              stepRightDown();
-          if (realVal == 6)
-              stepLeftUp();
-          if (realVal == 7)
-              stepLeftDown();
-        }
-        }
-      if (Firebase.RTDB.setInt(&fbdo, "/Flag", 0)){
-        Serial.println("Set Flag to zero");
+        Serial.println("Get array ok");
+       
+        FirebaseJsonArray arr = fbdo.jsonArray();
+        FirebaseJsonData currValue;
+        WebSerial.print("Array size: ");
+        WebSerial.println(arr.size());
+        WebSerial.println("Start Draw!");
+        for (size_t i = 0; i < arr.size(); i++)
+          {
+            arr.get(currValue, i);
+            vec.push_back(currValue.to<int>());
+          }
+        
+        WebSerial.println("End Draw!");
       }
       else {
-        Serial.println("FAILED");
-        Serial.println("REASON: " + fbdo.errorReason());
+        Serial.println(fbdo.errorReason());
+        WebSerial.println(fbdo.errorReason());
       }
-      WebSerial.println("End Draw!");
+    }
+   if (Firebase.RTDB.setInt(&fbdo, "/Flag", 0)){
+      Serial.println("Set Flag to zero");
     }
     else {
-      Serial.println(fbdo.errorReason());
+      Serial.println("FAILED");
+      Serial.println("REASON: " + fbdo.errorReason());
+      WebSerial.println("FAILED");
+      WebSerial.println("REASON: " + fbdo.errorReason());
     }
   }
 }
@@ -223,68 +236,92 @@ void initMotors() {
 }
 
 void stepMotors() {
-  digitalWrite(motor1Step, HIGH);
-  digitalWrite(motor2Step, HIGH);
-  digitalWrite(motor1Step, LOW);
-  digitalWrite(motor2Step, LOW);
+  if (shouldStepMotor1) {
+    digitalWrite(motor1Step, HIGH);
+  }
+  if (shouldStepMotor2) {
+    digitalWrite(motor2Step, HIGH);
+  }
+  if (shouldStepMotor1) {
+    digitalWrite(motor1Step, LOW);
+  }
+  if (shouldStepMotor2) {
+    digitalWrite(motor2Step, LOW);
+  }
   delay(1);
 }
 
 void stepLeftUp() {
-  digitalWrite(motor1Enable, LOW);
-  digitalWrite(motor2Enable, HIGH);
+//  digitalWrite(motor1Enable, LOW);
+//  digitalWrite(motor2Enable, HIGH);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = false;
   digitalWrite(motor1Dir, LOW);
   stepMotors();
 }
 
 void stepRightDown() {
-  digitalWrite(motor1Enable, LOW);
-  digitalWrite(motor2Enable, HIGH);
+//  digitalWrite(motor1Enable, LOW);
+//  digitalWrite(motor2Enable, HIGH);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = false;
   digitalWrite(motor1Dir, HIGH);
   stepMotors();
 }
 
 void stepRightUp() {
-  digitalWrite(motor1Enable, HIGH);
-  digitalWrite(motor2Enable, LOW);
+//  digitalWrite(motor1Enable, HIGH);
+//  digitalWrite(motor2Enable, LOW);
+  shouldStepMotor1 = false;
+  shouldStepMotor2 = true;
   digitalWrite(motor2Dir, HIGH);
   stepMotors();
 }
 
 void stepLeftDown() {
-  digitalWrite(motor1Enable, HIGH);
-  digitalWrite(motor2Enable, LOW);
+//  digitalWrite(motor1Enable, HIGH);
+//  digitalWrite(motor2Enable, LOW);
+  shouldStepMotor1 = false;
+  shouldStepMotor2 = true;
   digitalWrite(motor2Dir, LOW);
   stepMotors();
 }
 
 void stepLeft() {
-  digitalWrite(motor1Enable, LOW);
-  digitalWrite(motor2Enable, LOW);
+//  digitalWrite(motor1Enable, LOW);
+//  digitalWrite(motor2Enable, LOW);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = true;
   digitalWrite(motor1Dir, LOW);
   digitalWrite(motor2Dir, LOW);
   stepMotors();
 }
 
 void stepRight() {
-  digitalWrite(motor1Enable, LOW);
-  digitalWrite(motor2Enable, LOW);
+//  digitalWrite(motor1Enable, LOW);
+//  digitalWrite(motor2Enable, LOW);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = true;
   digitalWrite(motor1Dir, HIGH);
   digitalWrite(motor2Dir, HIGH);
   stepMotors();
 }
 
 void stepUp() {
-  digitalWrite(motor1Enable, LOW);
-  digitalWrite(motor2Enable, LOW);
+//  digitalWrite(motor1Enable, LOW);
+//  digitalWrite(motor2Enable, LOW);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = true;
   digitalWrite(motor1Dir, LOW);
   digitalWrite(motor2Dir, HIGH);
   stepMotors();
 }
 
 void stepDown() {
-  digitalWrite(motor1Enable, LOW);
-  digitalWrite(motor2Enable, LOW);
+//  digitalWrite(motor1Enable, LOW);
+//  digitalWrite(motor2Enable, LOW);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = true;
   digitalWrite(motor1Dir, HIGH);
   digitalWrite(motor2Dir, LOW);
   stepMotors();
