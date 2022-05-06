@@ -148,7 +148,7 @@ void loop() {
       }
       vec = Vector<int>();
     }
-    if (fbdo.intData() == 2) {
+    if (fbdo.intData() == 1) {
       if (Firebase.RTDB.getArray(&fbdo, "/RobotMoves")) {
         
         Serial.println("Get array ok");
