@@ -113,7 +113,9 @@ int buttonState = 0;
 bool initLeft = true;
 bool initDown = true;
 bool waitForRealseButton = false;
-Vector<int> vec;
+int flag;
+int NumOfMoves;
+int* movesArray;
 
 void loop() {
   if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)) {
@@ -121,54 +123,85 @@ void loop() {
     if (Firebase.RTDB.getInt(&fbdo, "/Flag")) {
       WebSerial.print("Got flag = ");
       WebSerial.println(fbdo.intData());
-      if (fbdo.intData() == 0)
+      flag = fbdo.intData();
+      if (flag == 0)
         return;
     } else {
       Serial.println(fbdo.errorReason());
       WebSerial.println(fbdo.errorReason());
     }
-    if (fbdo.intData() == 2) {
-      for (int elem : vec) {
+    if (flag == 4) {
+        if (Firebase.RTDB.getInt(&fbdo, "/NumOfMoves")) {
+        WebSerial.print("Got number of moves = ");
+        WebSerial.println(fbdo.intData());
+        NumOfMoves = fbdo.intData();
+        movesArray = new int[NumOfMoves];
+        } else {
+          Serial.println(fbdo.errorReason());
+          WebSerial.println(fbdo.errorReason());
+        }
+    }
+    if (flag == 2) {
+      WebSerial.print("Amount of pulse got = ");
+      WebSerial.println(counter);
+      counter = 0;
+      WebSerial.print("Start Draw ");
+      WebSerial.print(NumOfMoves);
+      WebSerial.println(" points!");
+      for (size_t i = 0; i < NumOfMoves; i++) {
+        int elem = movesArray[i];
         if (elem == 0)
           stepRight();
-        if (elem == 1)
+        else if (elem == 1)
             stepLeft();
-        if (elem == 2)
+        else if (elem == 2)
             stepUp();
-        if (elem == 3)
+        else if (elem == 3)
             stepDown();
-        if (elem == 4)
+        else if (elem == 4)
             stepRightUp();
-        if (elem == 5)
+        else if (elem == 5)
             stepRightDown();
-        if (elem == 6)
+        else if (elem == 6)
             stepLeftUp();
-        if (elem == 7)
-            stepLeftDown();        
+        else if (elem == 7)
+            stepLeftDown();
+        else
+            WebSerial.println("Error got unexpected robot move"); 
       }
-      vec = Vector<int>();
+      WebSerial.println("End Draw!");
+      delete[] movesArray;
     }
-    if (fbdo.intData() == 1) {
+    if (flag == 1) {
       if (Firebase.RTDB.getArray(&fbdo, "/RobotMoves")) {
-        
         Serial.println("Get array ok");
        
         FirebaseJsonArray arr = fbdo.jsonArray();
         FirebaseJsonData currValue;
         WebSerial.print("Array size: ");
         WebSerial.println(arr.size());
-        WebSerial.println("Start Draw!");
         for (size_t i = 0; i < arr.size(); i++)
           {
             arr.get(currValue, i);
-            vec.push_back(currValue.to<int>());
+            movesArray[1000 * counter + i] = currValue.to<int>();
           }
         
-        WebSerial.println("End Draw!");
+        WebSerial.println("Finished load!");
+        counter += 1;
       }
       else {
         Serial.println(fbdo.errorReason());
         WebSerial.println(fbdo.errorReason());
+        counter -= 1;
+        if (Firebase.RTDB.setInt(&fbdo, "/Flag", 3)){
+          Serial.println("Set Flag to 3");
+        }
+        else {
+          Serial.println("FAILED");
+          Serial.println("REASON: " + fbdo.errorReason());
+          WebSerial.println("FAILED");
+          WebSerial.println("REASON: " + fbdo.errorReason());
+        }
       }
     }
    if (Firebase.RTDB.setInt(&fbdo, "/Flag", 0)){
