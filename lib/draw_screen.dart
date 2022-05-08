@@ -5,6 +5,7 @@ import 'bresenham_algo.dart';
 
 // 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
 const Offset dummyOffset = Offset(-1, -1);
+const int uploadCapacity = 1000;
 
 class DrawerScreen extends StatefulWidget {
   final double width;
@@ -221,44 +222,53 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void uploadHandler() async {
-    displayMenu = false;
     var bresenhamPoints = globalBresenhamAlgo(points, widget.width, widget.height);
     var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
-    FirebaseDatabase.instance.ref("RobotMoves").remove();
-    DatabaseReference pointsRef = FirebaseDatabase.instance.ref("RobotMoves");
-    DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
-    flagRef.set(0);
-    if (robotMoves.length <= 1000) {
-      for (int i = 0; i < robotMoves.length; i++) {
-        pointsRef.child(i.toString()).set(robotMoves[i].index);
-      }
-      flagRef.set(1);
-    } else {
-      handleBigDraw(pointsRef, flagRef, robotMoves);
-    }
+    startUploading(robotMoves);
+    displayMenu = false;
   }
 
-  Future<void> handleBigDraw(DatabaseReference pointsRef, DatabaseReference flagRef, List<RobotMove> robotMoves) async {
-    int numOfMoves = robotMoves.length;
-    int numOfUploads = numOfMoves ~/ 1000;
-    if (numOfMoves % 1000 != 0) {
+  Future<void> startUploading(List<RobotMove> robotMoves) async {
+    final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
+    final DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
+    final DatabaseReference numofMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
+    numofMovesRef.set(robotMoves.length);
+    flagRef.set(4);
+    var flagVal = await flagRef.get();
+    while (flagVal.value.toString() != "0") {
+      flagVal = await flagRef.get();
+    }
+    movesRef.remove();
+    flagRef.set(0);
+    final int numOfMoves = robotMoves.length;
+    int numOfUploads = numOfMoves ~/ uploadCapacity;
+    if (numOfMoves % uploadCapacity != 0) {
       numOfUploads++;
     }
-
-    for (int curUpload = 0; curUpload < numOfUploads; curUpload++) {
+    for (int curUpload = 0; curUpload <= numOfUploads; curUpload++) {
       var flagVal = await flagRef.get();
-      while (flagVal.value.toString() != "0") {
-        // Wait for robot to finish points.
+      // 0 - robot ready for data, 1 - wait for robot, 2 = start draw, 3 = reuplaod last pulse.
+      while (flagVal.value.toString() == "1") {
         flagVal = await flagRef.get();
       }
-      pointsRef.remove();
-      int curNumOfMoves = 1000;
-      if (curUpload == numOfUploads - 1 && (numOfMoves % 1000 != 0)) {
-        curNumOfMoves = numOfMoves % 1000;
+      // Reupload failed pulse.
+      if (flagVal.value.toString() == "3") {
+        if (curUpload > 0) {
+          curUpload--;
+        }
+      }
+      if (curUpload == numOfUploads) {
+        flagRef.set(2);
+        return;
+      }
+      movesRef.remove();
+      int curNumOfMoves = uploadCapacity;
+      if (curUpload == numOfUploads - 1 && (numOfMoves % uploadCapacity != 0)) {
+        curNumOfMoves = numOfMoves % uploadCapacity;
       }
       for (int i = 0; i < curNumOfMoves; i++) {
-        int curMoveIndex = i + 1000 * curUpload;
-        pointsRef.child(i.toString()).set(robotMoves[curMoveIndex].index);
+        final int curMoveIndex = i + uploadCapacity * curUpload;
+        movesRef.child(i.toString()).set(robotMoves[curMoveIndex].index);
       }
       flagRef.set(1);
     }
