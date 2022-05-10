@@ -36,6 +36,7 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
       bresenhamPoints +=
           localBresenhamAlgo(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
       bresenhamPoints.add(cur);
+      i++;
     } else {
       bresenhamPoints +=
           localBresenhamAlgo(curLoc.dx.round(), curLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
