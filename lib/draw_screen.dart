@@ -237,24 +237,24 @@ class DrawState extends State<DrawerScreen> {
     for (RobotMove m in robotMoves) {
       debugPrint(m.toString() + "\n");
     }
-    List<Pair<int,RobotMove>> compressedMoves = compressMoves(robotMoves);
+    List<CompMove> compressedMoves = compressMoves(robotMoves);
     // startUploading(compressedMoves);
     displayMenu = false;
   }
 
-List<Pair<int,RobotMove>> compressMoves(List<RobotMove> robotMoves) {
-  List<Pair<int,RobotMove>> out = [];
-  for (RobotMove m in robotMoves) {
-    if (out.isNotEmpty && m == out.last.last) {
-      out.last.first++;
-    } else {
-      out.add(Pair<int,RobotMove>(1,m));
+  List<CompMove> compressMoves(List<RobotMove> robotMoves) {
+    List<CompMove> out = [];
+    for (RobotMove m in robotMoves) {
+      if (out.isNotEmpty && m == out.last.move) {
+        out.last.num++;
+      } else {
+        out.add(CompMove(num: 1, move: m));
+      }
     }
+    return out;
   }
-  return out;
-}
 
-  Future<void> startUploading(List<Pair<int,RobotMove>> compressedMoves) async {
+  Future<void> startUploading(List<CompMove> compressedMoves) async {
     const int uploadCapacity = 1000;
     final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
     final DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
@@ -290,10 +290,10 @@ List<Pair<int,RobotMove>> compressMoves(List<RobotMove> robotMoves) {
         curNumOfMoves = numOfMoves % uploadCapacity;
       }
       movesRef.child("0").set(curNumOfMoves);
-      for (int i = 1; i < curNumOfMoves+1; i++) {
-        final int curMoveIndex = i - 1 + uploadCapacity*curUpload;
-        movesRef.child((2i-1).toString()).set(compressedMoves[curMoveIndex].index.first);
-        movesRef.child((2i).toString()).set(compressedMoves[curMoveIndex].index.last);
+      for (int i = 1; i < curNumOfMoves + 1; i++) {
+        final int curMoveIndex = i - 1 + uploadCapacity * curUpload;
+        movesRef.child((2 * i - 1).toString()).set(compressedMoves[curMoveIndex].num);
+        movesRef.child((2 * i).toString()).set(compressedMoves[curMoveIndex].move.index);
       }
       flagRef.set(UploadFlag.readingPulse.index);
     }
@@ -330,10 +330,13 @@ class DrawingPoint {
   DrawingPoint({required this.pointLocation, required this.paint, required this.pointType});
 
   void printPoint() {
-    debugPrint(pointLocation.dx.round().toString() +
-        "  " +
-        pointLocation.dy.round().toString() +
-        "  " +
-        pointType.toString());
+    debugPrint(
+        pointLocation.dx.round().toString() + "  " + pointLocation.dy.round().toString() + "  " + pointType.toString());
   }
+}
+
+class CompMove {
+  int num;
+  RobotMove move;
+  CompMove({required this.num, required this.move});
 }
