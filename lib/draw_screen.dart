@@ -202,15 +202,15 @@ class DrawState extends State<DrawerScreen> {
         child: selctedSetting);
   }
 
-  void restartHandler() {
+  void restartHandler() async {
     selectedColor = Colors.red;
     strokeWidth = 3.0;
     selectedMenu = MenuSelection.strokeWidth;
     points.clear();
     displayMenu = false;
-    FirebaseDatabase.instance.ref("RobotMoves").remove();
-    FirebaseDatabase.instance.ref("NumOfMoves").remove();
-    FirebaseDatabase.instance.ref("Flag").remove();
+    await FirebaseDatabase.instance.ref("RobotMoves").remove();
+    await FirebaseDatabase.instance.ref("NumOfMoves").remove();
+    await FirebaseDatabase.instance.ref("Flag").remove();
   }
 
   void undoHandler() {
@@ -229,39 +229,21 @@ class DrawState extends State<DrawerScreen> {
   }
 
   void uploadHandler() async {
+    displayMenu = false;
     var bresenhamPoints = globalBresenhamAlgo(points, widget.width, widget.height);
     var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
-    for (DrawingPoint p in bresenhamPoints) {
-      p.printPoint();
-    }
-    for (RobotMove m in robotMoves) {
-      debugPrint(m.toString() + "\n");
-    }
-    List<CompMove> compressedMoves = compressMoves(robotMoves);
-    // startUploading(compressedMoves);
-    displayMenu = false;
-  }
-
-  List<CompMove> compressMoves(List<RobotMove> robotMoves) {
-    List<CompMove> out = [];
-    for (RobotMove m in robotMoves) {
-      if (out.isNotEmpty && m == out.last.move) {
-        out.last.num++;
-      } else {
-        out.add(CompMove(num: 1, move: m));
-      }
-    }
-    return out;
+    var compressedMoves = compressMoves(robotMoves);
+    await startUploading(compressedMoves);
   }
 
   Future<void> startUploading(List<CompMove> compressedMoves) async {
-    const int uploadCapacity = 1000;
+    const int uploadCapacity = 500;
     final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
     final DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
     final int numOfMoves = compressedMoves.length;
-    FirebaseDatabase.instance.ref("NumOfMoves").set(numOfMoves);
-    movesRef.remove();
-    flagRef.set(UploadFlag.sendNumOfMoves.index);
+    await FirebaseDatabase.instance.ref("NumOfMoves").set(numOfMoves * 2);
+    await movesRef.remove();
+    await flagRef.set(UploadFlag.sendNumOfMoves.index);
     var flagVal = await flagRef.get();
     while (flagVal.value != UploadFlag.readyForPulse.index) {
       flagVal = await flagRef.get();
@@ -281,21 +263,21 @@ class DrawState extends State<DrawerScreen> {
         }
       }
       if (curUpload == numOfUploads) {
-        flagRef.set(UploadFlag.startDraw.index);
+        await flagRef.set(UploadFlag.startDraw.index);
         return;
       }
-      movesRef.remove();
+      await movesRef.remove();
       int curNumOfMoves = uploadCapacity;
       if (curUpload == numOfUploads - 1 && (numOfMoves % uploadCapacity != 0)) {
         curNumOfMoves = numOfMoves % uploadCapacity;
       }
-      movesRef.child("0").set(curNumOfMoves);
+      await movesRef.child("0").set(curNumOfMoves * 2);
       for (int i = 1; i < curNumOfMoves + 1; i++) {
         final int curMoveIndex = i - 1 + uploadCapacity * curUpload;
         movesRef.child((2 * i - 1).toString()).set(compressedMoves[curMoveIndex].num);
         movesRef.child((2 * i).toString()).set(compressedMoves[curMoveIndex].move.index);
       }
-      flagRef.set(UploadFlag.readingPulse.index);
+      await flagRef.set(UploadFlag.readingPulse.index);
     }
   }
 }

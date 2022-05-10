@@ -117,3 +117,15 @@ List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
   robotMoves.add(RobotMove.servoUp);
   return robotMoves;
 }
+
+List<CompMove> compressMoves(List<RobotMove> robotMoves) {
+    List<CompMove> out = [];
+    for (RobotMove m in robotMoves) {
+      if (out.isNotEmpty && m == out.last.move) {
+        out.last.num++;
+      } else {
+        out.add(CompMove(num: 1, move: m));
+      }
+    }
+    return out;
+  }
