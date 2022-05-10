@@ -25,7 +25,7 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
     var next = scaledPoints[i + 1];
     final Offset curLoc = cur.pointLocation;
     final Offset nextLoc = next.pointLocation;
-    if (next.pointType != PointType.regular) {
+    if (cur.pointType == PointType.regular && next.pointType != PointType.regular) {
       continue;
     }
     if (cur.pointType == PointType.dummyUp) {
@@ -90,7 +90,7 @@ List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
     }
     final Point curLoc = Point(cur.pointLocation.dx, cur.pointLocation.dy);
     final Point nextLoc = Point(next.pointLocation.dx, next.pointLocation.dy);
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 1; j++) {
       if (curLoc.x < nextLoc.x && curLoc.y == nextLoc.y) {
         robotMoves.add(RobotMove.right);
       } else if (curLoc.x > nextLoc.x && curLoc.y == nextLoc.y) {
