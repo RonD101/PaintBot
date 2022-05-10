@@ -237,15 +237,28 @@ class DrawState extends State<DrawerScreen> {
     for (RobotMove m in robotMoves) {
       debugPrint(m.toString() + "\n");
     }
-    // startUploading(robotMoves);
+    List<Pair<int,RobotMove>> compressedMoves = compressMoves(robotMoves);
+    // startUploading(compressedMoves);
     displayMenu = false;
   }
 
-  Future<void> startUploading(List<RobotMove> robotMoves) async {
+List<Pair<int,RobotMove>> compressMoves(List<RobotMove> robotMoves) {
+  List<Pair<int,RobotMove>> out = [];
+  for (RobotMove m in robotMoves) {
+    if (out.isNotEmpty && m == out.last.last) {
+      out.last.first++;
+    } else {
+      out.add(Pair<int,RobotMove>(1,m));
+    }
+  }
+  return out;
+}
+
+  Future<void> startUploading(List<Pair<int,RobotMove>> compressedMoves) async {
     const int uploadCapacity = 1000;
     final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
     final DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
-    final int numOfMoves = robotMoves.length;
+    final int numOfMoves = compressedMoves.length;
     FirebaseDatabase.instance.ref("NumOfMoves").set(numOfMoves);
     movesRef.remove();
     flagRef.set(UploadFlag.sendNumOfMoves.index);
@@ -276,9 +289,11 @@ class DrawState extends State<DrawerScreen> {
       if (curUpload == numOfUploads - 1 && (numOfMoves % uploadCapacity != 0)) {
         curNumOfMoves = numOfMoves % uploadCapacity;
       }
-      for (int i = 0; i < curNumOfMoves; i++) {
-        final int curMoveIndex = i + uploadCapacity * curUpload;
-        movesRef.child(i.toString()).set(robotMoves[curMoveIndex].index);
+      movesRef.child("0").set(curNumOfMoves);
+      for (int i = 1; i < curNumOfMoves+1; i++) {
+        final int curMoveIndex = i - 1 + uploadCapacity*curUpload;
+        movesRef.child((2i-1).toString()).set(compressedMoves[curMoveIndex].index.first);
+        movesRef.child((2i).toString()).set(compressedMoves[curMoveIndex].index.last);
       }
       flagRef.set(UploadFlag.readingPulse.index);
     }
