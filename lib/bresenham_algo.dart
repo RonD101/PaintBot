@@ -32,7 +32,7 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
       bresenhamPoints.add(cur);
       continue;
     } else if (cur.pointType == PointType.dummyDown) {
-      final Offset prevLoc = scaledPoints[i - 1].pointLocation;
+      final Offset prevLoc = scaledPoints[i - 2].pointLocation;
       bresenhamPoints +=
           localBresenhamAlgo(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
       bresenhamPoints.add(cur);
