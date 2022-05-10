@@ -276,8 +276,9 @@ class DrawState extends State<DrawerScreen> {
       if (curUpload == numOfUploads - 1 && (numOfMoves % uploadCapacity != 0)) {
         curNumOfMoves = numOfMoves % uploadCapacity;
       }
-      for (int i = 0; i < curNumOfMoves; i++) {
-        final int curMoveIndex = i + uploadCapacity * curUpload;
+      movesRef.child("0").set(curNumOfMoves);
+      for (int i = 1; i < curNumOfMoves+1; i++) {
+        final int curMoveIndex = i - 1 + uploadCapacity*curUpload;
         movesRef.child(i.toString()).set(robotMoves[curMoveIndex].index);
       }
       flagRef.set(UploadFlag.readingPulse.index);
