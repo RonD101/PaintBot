@@ -5,7 +5,9 @@ import 'bresenham_algo.dart';
 
 // 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
 const Offset dummyOffset = Offset(-1, -1);
-const int uploadCapacity = 1000;
+enum MenuSelection { strokeWidth, brushColor, settingMenu }
+enum UploadFlag { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
+enum PointType { regular, dummyUp, dummyDown }
 
 class DrawerScreen extends StatefulWidget {
   final double width;
@@ -49,6 +51,7 @@ class DrawState extends State<DrawerScreen> {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
             points.add(DrawingPoint(
+                pointType: PointType.regular,
                 pointLocation: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
@@ -61,6 +64,7 @@ class DrawState extends State<DrawerScreen> {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
             points.add(DrawingPoint(
+                pointType: PointType.dummyDown,
                 pointLocation: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
@@ -71,7 +75,7 @@ class DrawState extends State<DrawerScreen> {
         },
         onPanEnd: (details) {
           setState(() {
-            points.add(DrawingPoint(pointLocation: dummyOffset, paint: Paint()));
+            points.add(DrawingPoint(pointType: PointType.dummyUp, pointLocation: dummyOffset, paint: Paint()));
           });
         },
         child: CustomPaint(size: Size.infinite, painter: DrawingPainter(pointsList: points)));
@@ -204,6 +208,9 @@ class DrawState extends State<DrawerScreen> {
     selectedMenu = MenuSelection.strokeWidth;
     points.clear();
     displayMenu = false;
+    FirebaseDatabase.instance.ref("RobotMoves").remove();
+    FirebaseDatabase.instance.ref("NumOfMoves").remove();
+    FirebaseDatabase.instance.ref("Flag").remove();
   }
 
   void undoHandler() {
@@ -224,41 +231,44 @@ class DrawState extends State<DrawerScreen> {
   void uploadHandler() async {
     var bresenhamPoints = globalBresenhamAlgo(points, widget.width, widget.height);
     var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
-    startUploading(robotMoves);
+    for (DrawingPoint p in bresenhamPoints) {
+      p.printPoint();
+    }
+    for (RobotMove m in robotMoves) {
+      debugPrint(m.toString() + "\n");
+    }
+    // startUploading(robotMoves);
     displayMenu = false;
   }
 
   Future<void> startUploading(List<RobotMove> robotMoves) async {
+    const int uploadCapacity = 1000;
     final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
     final DatabaseReference flagRef = FirebaseDatabase.instance.ref("Flag");
-    final DatabaseReference numofMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
-    numofMovesRef.set(robotMoves.length);
-    flagRef.set(4);
+    final int numOfMoves = robotMoves.length;
+    FirebaseDatabase.instance.ref("NumOfMoves").set(numOfMoves);
+    movesRef.remove();
+    flagRef.set(UploadFlag.sendNumOfMoves.index);
     var flagVal = await flagRef.get();
-    while (flagVal.value.toString() != "0") {
+    while (flagVal.value != UploadFlag.readyForPulse.index) {
       flagVal = await flagRef.get();
     }
-    movesRef.remove();
-    flagRef.set(0);
-    final int numOfMoves = robotMoves.length;
     int numOfUploads = numOfMoves ~/ uploadCapacity;
     if (numOfMoves % uploadCapacity != 0) {
       numOfUploads++;
     }
     for (int curUpload = 0; curUpload <= numOfUploads; curUpload++) {
-      var flagVal = await flagRef.get();
-      // 0 - robot ready for data, 1 - wait for robot, 2 = start draw, 3 = reuplaod last pulse.
-      while (flagVal.value.toString() == "1") {
+      flagVal = await flagRef.get();
+      while (flagVal.value == UploadFlag.readingPulse.index) {
         flagVal = await flagRef.get();
       }
-      // Reupload failed pulse.
-      if (flagVal.value.toString() == "3") {
+      if (flagVal.value == UploadFlag.reuploadLast.index) {
         if (curUpload > 0) {
           curUpload--;
         }
       }
       if (curUpload == numOfUploads) {
-        flagRef.set(2);
+        flagRef.set(UploadFlag.startDraw.index);
         return;
       }
       movesRef.remove();
@@ -270,7 +280,7 @@ class DrawState extends State<DrawerScreen> {
         final int curMoveIndex = i + uploadCapacity * curUpload;
         movesRef.child(i.toString()).set(robotMoves[curMoveIndex].index);
       }
-      flagRef.set(1);
+      flagRef.set(UploadFlag.readingPulse.index);
     }
   }
 }
@@ -301,15 +311,14 @@ class DrawingPainter extends CustomPainter {
 class DrawingPoint {
   Paint paint;
   Offset pointLocation;
-  DrawingPoint({required this.pointLocation, required this.paint});
+  PointType pointType;
+  DrawingPoint({required this.pointLocation, required this.paint, required this.pointType});
 
   void printPoint() {
     debugPrint(pointLocation.dx.round().toString() +
         "  " +
         pointLocation.dy.round().toString() +
         "  " +
-        paint.color.toString());
+        pointType.toString());
   }
 }
-
-enum MenuSelection { strokeWidth, brushColor, settingMenu }

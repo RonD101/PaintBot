@@ -1,52 +1,59 @@
 import 'dart:math';
 import 'draw_screen.dart';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 
-enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown }
-const Point dummyPoint = Point(-1, -1);
+enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown }
 const double a4Width = 297;
 const double a4Height = 210;
 const double pixelToMM = 0.26458333;
 
-List<Point> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
+List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
   final double xScale = a4Width / (width * pixelToMM);
   final double yScale = a4Height / (height * pixelToMM);
-  List<Point> bresenhamPoints = [];
-  List<Point> scaledPoints = [];
+  List<DrawingPoint> bresenhamPoints = [];
+  List<DrawingPoint> scaledPoints = [];
   // scaledPoints.add(Point(0, height * yScale)); // bresenham from robot start to first point.
   for (var cur in points) {
-    if (cur.pointLocation == dummyOffset) {
-      scaledPoints.add(dummyPoint);
-    } else {
-      scaledPoints.add(Point(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale));
-    }
+    scaledPoints.add(DrawingPoint(
+        pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale),
+        paint: cur.paint,
+        pointType: cur.pointType));
   }
-
-  for (int i = 0; i < scaledPoints.length - 1; i++) {
+  for (int i = 1; i < scaledPoints.length - 2; i++) {
     var cur = scaledPoints[i];
     var next = scaledPoints[i + 1];
-    if (cur == dummyPoint) {
+    final Offset curLoc = cur.pointLocation;
+    final Offset nextLoc = next.pointLocation;
+    if (next.pointType != PointType.regular) {
       continue;
     }
-    if (next == dummyPoint) {
-      if (i + 2 == scaledPoints.length) {
-        continue;
-      }
-      next = scaledPoints[i + 2];
+    if (cur.pointType == PointType.dummyUp) {
+      bresenhamPoints.add(cur);
+      continue;
+    } else if (cur.pointType == PointType.dummyDown) {
+      final Offset prevLoc = scaledPoints[i - 1].pointLocation;
+      bresenhamPoints +=
+          localBresenhamAlgo(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
+      bresenhamPoints.add(cur);
+    } else {
+      bresenhamPoints +=
+          localBresenhamAlgo(curLoc.dx.round(), curLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
     }
-    bresenhamPoints += localBresenhamAlgo(cur.x.round(), cur.y.round(), next.x.round(), next.y.round());
   }
   return bresenhamPoints;
 }
 
-List<Point> localBresenhamAlgo(int x0, int y0, int x1, int y1) {
-  List<Point> bresenhamPoints = [];
+List<DrawingPoint> localBresenhamAlgo(int x0, int y0, int x1, int y1) {
+  List<DrawingPoint> bresenhamPoints = [];
   var dx = (x1 - x0).abs();
   var dy = (y1 - y0).abs();
   var sx = (x0 < x1) ? 1 : -1;
   var sy = (y0 < y1) ? 1 : -1;
   var err = dx - dy;
   while (true) {
-    bresenhamPoints.add(Point(x0, y0));
+    bresenhamPoints.add(DrawingPoint(
+        pointLocation: Offset(x0.toDouble(), y0.toDouble()), paint: Paint(), pointType: PointType.regular));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }
@@ -63,34 +70,49 @@ List<Point> localBresenhamAlgo(int x0, int y0, int x1, int y1) {
   return bresenhamPoints;
 }
 
-List<RobotMove> getRobotMovesFromBresenham(List<Point> bresenhamPoints) {
+List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
   List<RobotMove> robotMoves = [];
+  robotMoves.add(RobotMove.servoDown);
   for (int i = 0; i < bresenhamPoints.length - 1; i++) {
-    Point cur = bresenhamPoints[i];
-    Point next = bresenhamPoints[i + 1];
+    final DrawingPoint cur = bresenhamPoints[i];
+    final DrawingPoint next = bresenhamPoints[i + 1];
+    if (next.pointType != PointType.regular) {
+      continue;
+    }
+    if (cur.pointType == PointType.dummyDown) {
+      robotMoves.add(RobotMove.servoDown);
+      continue;
+    }
+    if (cur.pointType == PointType.dummyUp) {
+      robotMoves.add(RobotMove.servoUp);
+      continue;
+    }
+    final Point curLoc = Point(cur.pointLocation.dx, cur.pointLocation.dy);
+    final Point nextLoc = Point(next.pointLocation.dx, next.pointLocation.dy);
     for (int j = 0; j < 3; j++) {
-      if (cur.x < next.x && cur.y == next.y) {
+      if (curLoc.x < nextLoc.x && curLoc.y == nextLoc.y) {
         robotMoves.add(RobotMove.right);
-      } else if (cur.x > next.x && cur.y == next.y) {
+      } else if (curLoc.x > nextLoc.x && curLoc.y == nextLoc.y) {
         robotMoves.add(RobotMove.left);
-      } else if (cur.x == next.x && cur.y < next.y) {
+      } else if (curLoc.x == nextLoc.x && curLoc.y < nextLoc.y) {
         robotMoves.add(RobotMove.down);
-      } else if (cur.x == next.x && cur.y > next.y) {
+      } else if (curLoc.x == nextLoc.x && curLoc.y > nextLoc.y) {
         robotMoves.add(RobotMove.up);
-      } else if (cur.x < next.x && cur.y < next.y) {
+      } else if (curLoc.x < nextLoc.x && curLoc.y < nextLoc.y) {
         robotMoves.add(RobotMove.rightDown);
         robotMoves.add(RobotMove.rightDown);
-      } else if (cur.x < next.x && cur.y > next.y) {
+      } else if (curLoc.x < nextLoc.x && curLoc.y > nextLoc.y) {
         robotMoves.add(RobotMove.rightUp);
         robotMoves.add(RobotMove.rightUp);
-      } else if (cur.x > next.x && cur.y < next.y) {
+      } else if (curLoc.x > nextLoc.x && curLoc.y < nextLoc.y) {
         robotMoves.add(RobotMove.leftDown);
         robotMoves.add(RobotMove.leftDown);
-      } else if (cur.x > next.x && cur.y > next.y) {
+      } else if (curLoc.x > nextLoc.x && curLoc.y > nextLoc.y) {
         robotMoves.add(RobotMove.leftUp);
         robotMoves.add(RobotMove.leftUp);
       }
     }
   }
+  robotMoves.add(RobotMove.servoUp);
   return robotMoves;
 }
