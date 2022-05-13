@@ -1,12 +1,5 @@
 import 'dart:math';
-import 'draw_screen.dart';
-import 'dart:ui';
-import 'package:flutter/material.dart';
-
-enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown }
-const double a4Width = 297;
-const double a4Height = 210;
-const double pixelToMM = 0.26458333;
+import 'app_utils.dart';
 
 List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
   final double xScale = a4Width / (width * pixelToMM);
@@ -119,13 +112,13 @@ List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
 }
 
 List<CompMove> compressMoves(List<RobotMove> robotMoves) {
-    List<CompMove> out = [];
-    for (RobotMove m in robotMoves) {
-      if (out.isNotEmpty && m == out.last.move) {
-        out.last.num++;
-      } else {
-        out.add(CompMove(num: 1, move: m));
-      }
+  List<CompMove> out = [];
+  for (RobotMove m in robotMoves) {
+    if (out.isNotEmpty && m == out.last.move) {
+      out.last.num++;
+    } else {
+      out.add(CompMove(num: 1, move: m));
     }
-    return out;
   }
+  return out;
+}
