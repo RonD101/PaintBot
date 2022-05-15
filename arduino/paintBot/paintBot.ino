@@ -11,6 +11,10 @@
 //Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 
+//#include <ESP32Servo.h> 
+
+//Servo myservo;  // create servo object to control a servo
+
 // Insert your network credentials
 #define WIFI_SSID "TechPublic"
 #define WIFI_PASSWORD ""
@@ -46,6 +50,8 @@ bool shouldStepMotor1 = false;
 bool shouldStepMotor2 = false;
 int led = 2;
 
+int servoPin = 12;
+
 int input = 13;
 void setup() {
   // Motot 1
@@ -63,6 +69,15 @@ void setup() {
   digitalWrite(motor2Enable, LOW);
   digitalWrite(motor1Step, LOW);
   digitalWrite(motor2Step, LOW);
+
+//  ESP32PWM::allocateTimer(0);
+//  ESP32PWM::allocateTimer(1);
+//  ESP32PWM::allocateTimer(2);
+//  ESP32PWM::allocateTimer(3);
+//  myservo.setPeriodHertz(50);// Standard 50hz servo
+//  myservo.attach(servoPin, 1000, 2300);
+//
+//  myservo.write(140);
   
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
@@ -148,26 +163,44 @@ void loop() {
       WebSerial.print("Start Draw ");
       WebSerial.print(NumOfMoves);
       WebSerial.println(" points!");
-      for (size_t i = 0; i < NumOfMoves; i++) {
-        int elem = movesArray[i];
-        if (elem == 0)
-          stepRight();
-        else if (elem == 1)
-            stepLeft();
-        else if (elem == 2)
-            stepUp();
-        else if (elem == 3)
-            stepDown();
-        else if (elem == 4)
-            stepRightUp();
-        else if (elem == 5)
-            stepRightDown();
-        else if (elem == 6)
-            stepLeftUp();
-        else if (elem == 7)
-            stepLeftDown();
-        else
-            WebSerial.println("Error got unexpected robot move"); 
+      for (int i = 0; i < NumOfMoves; i = i + 2) {
+        int len = movesArray[i];
+        int elem = movesArray[i + 1];
+//        Firebase.RTDB.setInt(&fbdo, "/len", len);
+//        Firebase.RTDB.setInt(&fbdo, "/elem", elem);
+        WebSerial.print("i = ");
+        WebSerial.println(i);
+        WebSerial.print("NumOfMoves = ");
+        WebSerial.println(NumOfMoves);
+        WebSerial.print("len = ");
+        WebSerial.println(len);
+        WebSerial.print("elem = ");
+        WebSerial.println(elem);
+        for (int j = 0; j < len; j++) {
+//        Firebase.RTDB.setInt(&fbdo, "/Debug 2", j);
+          if (elem == 0)
+              stepRight();
+          else if (elem == 1)
+              stepLeft();
+          else if (elem == 2)
+              stepUp();
+          else if (elem == 3)
+              stepDown();
+          else if (elem == 4)
+              stepRightUp();
+          else if (elem == 5)
+              stepRightDown();
+          else if (elem == 6)
+              stepLeftUp();
+          else if (elem == 7)
+              stepLeftDown();
+          else if (elem == 8){}
+//              myservo.write(140); // servo up
+          else if (elem == 9){}
+//              myservo.write(0); // servo down
+          else
+              WebSerial.println("Error got unexpected robot move");
+        }
       }
       WebSerial.println("End Draw!");
       delete[] movesArray;
@@ -180,21 +213,42 @@ void loop() {
         FirebaseJsonData currValue;
         WebSerial.print("Array size: ");
         WebSerial.println(arr.size());
-        for (size_t i = 0; i < arr.size(); i++)
-          {
-            arr.get(currValue, i);
-            movesArray[1000 * counter + i] = currValue.to<int>();
+        arr.get(currValue, 0);
+        int amountOfElemInArray = currValue.to<int>();
+        if (amountOfElemInArray + 1 != arr.size()) {
+          if (Firebase.RTDB.setInt(&fbdo, "/Flag", 3)){
+            Serial.println("Set Flag to 3");
+            WebSerial.println("Set Flag to 3 because of array sizes that doesn't match");
+            WebSerial.print("first element: ");
+            WebSerial.println(amountOfElemInArray);
+            WebSerial.print("arr size: ");
+            WebSerial.println(arr.size());
+            return;
           }
+          else {
+            Serial.println("FAILED");
+            Serial.println("REASON: " + fbdo.errorReason());
+            WebSerial.println("FAILED");
+            WebSerial.println("REASON: " + fbdo.errorReason());
+          }
+        } else {
+          for (size_t i = 0; i < arr.size(); i++)
+            {
+              arr.get(currValue, i + 1);
+              movesArray[1000 * counter + i] = currValue.to<int>();
+            }
+          
+          WebSerial.println("Finished load!");
+          counter += 1;
+        }
         
-        WebSerial.println("Finished load!");
-        counter += 1;
       }
       else {
         Serial.println(fbdo.errorReason());
         WebSerial.println(fbdo.errorReason());
-        counter -= 1;
         if (Firebase.RTDB.setInt(&fbdo, "/Flag", 3)){
           Serial.println("Set Flag to 3");
+          return;
         }
         else {
           Serial.println("FAILED");
