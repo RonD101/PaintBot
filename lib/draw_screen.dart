@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'bresenham_algo.dart';
 import 'upload_handler.dart';
@@ -203,8 +202,8 @@ class DrawState extends State<DrawerScreen> {
     selectedMenu = MenuSelection.strokeWidth;
     points.clear();
     displayMenu = false;
-    movesRef.remove();
-    numOfMovesRef.remove();
+    await movesRef.remove();
+    await numOfMovesRef.remove();
     await flagRef.remove();
   }
 
@@ -225,31 +224,9 @@ class DrawState extends State<DrawerScreen> {
 
   void uploadHandler() async {
     displayMenu = false;
-    var bresenhamPoints = globalBresenhamAlgo(points, widget.width, widget.height);
-    var robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
-    var compressedMoves = compressMoves(robotMoves);
+    final List<DrawingPoint> bresenhamPoints = globalBresenhamAlgo(points, widget.width, widget.height);
+    final List<RobotMove> robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
+    final List<CompMove> compressedMoves = compressMoves(robotMoves);
     await startUploading(compressedMoves);
   }
-}
-
-class DrawingPainter extends CustomPainter {
-  DrawingPainter({required this.pointsList});
-  List<DrawingPoint> pointsList;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (int i = 0; i < pointsList.length - 1; i++) {
-      var curLocation = pointsList[i].pointLocation;
-      var nextLocation = pointsList[i + 1].pointLocation;
-
-      if (curLocation != dummyOffset && nextLocation != dummyOffset) {
-        canvas.drawLine(curLocation, nextLocation, pointsList[i].paint);
-      } else if (curLocation != dummyOffset && nextLocation == dummyOffset) {
-        canvas.drawPoints(
-            PointMode.points, [curLocation, Offset(curLocation.dx + 0.1, curLocation.dy + 0.1)], pointsList[i].paint);
-      }
-    }
-  }
-  @override
-  bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }

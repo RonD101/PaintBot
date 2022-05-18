@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'app_utils.dart';
+import 'dart:ui';
 
 List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
   final double xScale = a4Width / (width * pixelToMM);
@@ -14,8 +15,8 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
         pointType: cur.pointType));
   }
   for (int i = 1; i < scaledPoints.length - 2; i++) {
-    var cur = scaledPoints[i];
-    var next = scaledPoints[i + 1];
+    final DrawingPoint cur = scaledPoints[i];
+    final DrawingPoint next = scaledPoints[i + 1];
     final Offset curLoc = cur.pointLocation;
     final Offset nextLoc = next.pointLocation;
     if (cur.pointType == PointType.regular && next.pointType != PointType.regular) {
@@ -83,7 +84,7 @@ List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
     }
     final Point curLoc = Point(cur.pointLocation.dx, cur.pointLocation.dy);
     final Point nextLoc = Point(next.pointLocation.dx, next.pointLocation.dy);
-    for (int j = 0; j < 1; j++) {
+    for (int j = 0; j < 3; j++) {
       if (curLoc.x < nextLoc.x && curLoc.y == nextLoc.y) {
         robotMoves.add(RobotMove.right);
       } else if (curLoc.x > nextLoc.x && curLoc.y == nextLoc.y) {
