@@ -11,13 +11,15 @@
 //Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 
-//#include <ESP32Servo.h> 
+#include <ESP32Servo.h> 
 
-//Servo myservo;  // create servo object to control a servo
+Servo myservo;  // create servo object to control a servo
 
 // Insert your network credentials
 #define WIFI_SSID "TechPublic"
 #define WIFI_PASSWORD ""
+//#define WIFI_SSID "RK1996"
+//#define WIFI_PASSWORD "dead4fun"
 
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyAIVdnB_mJA6_ZV5G9ctjWO7aQRLJk_DjQ"
@@ -52,7 +54,8 @@ int led = 2;
 
 int servoPin = 12;
 
-int input = 13;
+int homeLeftPin = 14;
+int homeDownPin = 13;
 void setup() {
   // Motot 1
   pinMode(motor1Dir, OUTPUT);    // Direction Pin
@@ -63,21 +66,19 @@ void setup() {
   pinMode(motor2Step, OUTPUT);    // Step pin
   pinMode(motor2Enable, OUTPUT);    // Enable pin
 
-  pinMode(input, INPUT);
+  pinMode(homeLeftPin, INPUT);
+  pinMode(homeDownPin, INPUT);
 
   digitalWrite(motor1Enable, LOW);
   digitalWrite(motor2Enable, LOW);
   digitalWrite(motor1Step, LOW);
   digitalWrite(motor2Step, LOW);
 
-//  ESP32PWM::allocateTimer(0);
-//  ESP32PWM::allocateTimer(1);
-//  ESP32PWM::allocateTimer(2);
-//  ESP32PWM::allocateTimer(3);
-//  myservo.setPeriodHertz(50);// Standard 50hz servo
-//  myservo.attach(servoPin, 1000, 2300);
+  ESP32PWM::allocateTimer(0);
+  myservo.setPeriodHertz(50);// Standard 50hz servo
+  myservo.attach(servoPin, 1000, 2000);
 //
-//  myservo.write(140);
+//  myservo.write(10);
   
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
@@ -112,19 +113,15 @@ void setup() {
   
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
-
-  
   WebSerial.begin(&server);
   server.begin();
-  
-  
-
-  delay(10000);
+  delay(2000);
 }
 
 int counter = 0;
 int timeLap = 1000;
-int buttonState = 0;
+int HomeLeftState = 0;
+int HomeDownState = 0;
 bool initLeft = true;
 bool initDown = true;
 bool waitForRealseButton = false;
@@ -142,18 +139,18 @@ void loop() {
       if (flag == 0)
         return;
     } else {
-      Serial.println(fbdo.errorReason());
-      WebSerial.println(fbdo.errorReason());
+      printDebugErrors();
     }
     if (flag == 4) {
         if (Firebase.RTDB.getInt(&fbdo, "/NumOfMoves")) {
         WebSerial.print("Got number of moves = ");
         WebSerial.println(fbdo.intData());
+        Serial.print("Got number of moves = ");
+        Serial.println(fbdo.intData());
         NumOfMoves = fbdo.intData();
         movesArray = new int[NumOfMoves];
         } else {
-          Serial.println(fbdo.errorReason());
-          WebSerial.println(fbdo.errorReason());
+          printDebugErrors();
         }
     }
     if (flag == 2) {
@@ -168,14 +165,14 @@ void loop() {
         int elem = movesArray[i + 1];
 //        Firebase.RTDB.setInt(&fbdo, "/len", len);
 //        Firebase.RTDB.setInt(&fbdo, "/elem", elem);
-        WebSerial.print("i = ");
-        WebSerial.println(i);
-        WebSerial.print("NumOfMoves = ");
-        WebSerial.println(NumOfMoves);
-        WebSerial.print("len = ");
-        WebSerial.println(len);
-        WebSerial.print("elem = ");
-        WebSerial.println(elem);
+        Serial.print("i = ");
+        Serial.println(i);
+        Serial.print("NumOfMoves = ");
+        Serial.println(NumOfMoves);
+        Serial.print("len = ");
+        Serial.println(len);
+        Serial.print("elem = ");
+        Serial.println(elem);
         for (int j = 0; j < len; j++) {
 //        Firebase.RTDB.setInt(&fbdo, "/Debug 2", j);
           if (elem == 0)
@@ -194,21 +191,30 @@ void loop() {
               stepLeftUp();
           else if (elem == 7)
               stepLeftDown();
-          else if (elem == 8){}
-//              myservo.write(140); // servo up
-          else if (elem == 9){}
-//              myservo.write(0); // servo down
+          else if (elem == 8) {
+              delay(300);
+              myservo.write(10); // servo up
+              delay(300);
+          }
+          else if (elem == 9) {
+              delay(300);
+              myservo.write(130); // servo down
+              delay(300);
+          }
+          else if (elem == 10) {
+              goHome();
+          }
           else
               WebSerial.println("Error got unexpected robot move");
         }
       }
+      Serial.println("End Draw!");
       WebSerial.println("End Draw!");
       delete[] movesArray;
     }
     if (flag == 1) {
       if (Firebase.RTDB.getArray(&fbdo, "/RobotMoves")) {
         Serial.println("Get array ok");
-       
         FirebaseJsonArray arr = fbdo.jsonArray();
         FirebaseJsonData currValue;
         WebSerial.print("Array size: ");
@@ -226,10 +232,7 @@ void loop() {
             return;
           }
           else {
-            Serial.println("FAILED");
-            Serial.println("REASON: " + fbdo.errorReason());
-            WebSerial.println("FAILED");
-            WebSerial.println("REASON: " + fbdo.errorReason());
+            printDebugErrors();
           }
         } else {
           for (size_t i = 0; i < arr.size(); i++)
@@ -241,35 +244,42 @@ void loop() {
           WebSerial.println("Finished load!");
           counter += 1;
         }
-        
       }
       else {
-        Serial.println(fbdo.errorReason());
-        WebSerial.println(fbdo.errorReason());
+        printDebugErrors();
         if (Firebase.RTDB.setInt(&fbdo, "/Flag", 3)){
           Serial.println("Set Flag to 3");
           return;
         }
         else {
-          Serial.println("FAILED");
-          Serial.println("REASON: " + fbdo.errorReason());
-          WebSerial.println("FAILED");
-          WebSerial.println("REASON: " + fbdo.errorReason());
+          printDebugErrors();
         }
       }
     }
+   if (flag == -1) { // For debug
+      if (Firebase.RTDB.setString(&fbdo, "/IP", WiFi.localIP().toString())){
+        Serial.print("IP: ");
+        Serial.println(WiFi.localIP());
+      }
+      else {
+        printDebugErrors();
+      }
+   }
    if (Firebase.RTDB.setInt(&fbdo, "/Flag", 0)){
       Serial.println("Set Flag to zero");
     }
     else {
-      Serial.println("FAILED");
-      Serial.println("REASON: " + fbdo.errorReason());
-      WebSerial.println("FAILED");
-      WebSerial.println("REASON: " + fbdo.errorReason());
+      printDebugErrors();
     }
   }
 }
 
+void printDebugErrors() {
+  Serial.println("FAILED");
+  Serial.println("REASON: " + fbdo.errorReason());
+  WebSerial.println("FAILED");
+  WebSerial.println("REASON: " + fbdo.errorReason());
+}
 
 void mainLoop() {
    if (counter < timeLap)
@@ -300,26 +310,23 @@ void mainLoop() {
    delay(1);
 }
 
-void initMotors() {
-  buttonState = digitalRead(input);
-  if (buttonState == LOW && not waitForRealseButton) {
-      if (initLeft) {
-        initLeft = false;
-        waitForRealseButton = true;
-      }
-      else if(initDown) {
-        initDown = false;
-        waitForRealseButton = true;
-      }
-   }
-  if (not waitForRealseButton) {
-    if (initLeft)
-      stepLeft();
-    else if(initDown)
-      stepDown();
-  } else if (buttonState == HIGH)
-      waitForRealseButton = false;
-  delay(1);
+void goHome() {
+  WebSerial.println("Start go home");
+  Serial.println("Start go home");
+  HomeLeftState = digitalRead(homeLeftPin);
+  HomeDownState = digitalRead(homeDownPin);
+  while (HomeDownState == HIGH) {
+    stepDown();
+    HomeDownState = digitalRead(homeDownPin);
+  }
+  WebSerial.println("Finish go down");
+  Serial.println("Finish go down");
+  while (HomeLeftState == HIGH) {
+    stepLeft();
+    HomeLeftState = digitalRead(homeLeftPin);
+  }
+  WebSerial.println("Finish go Left");
+  Serial.println("Finish go Left");
 }
 
 void stepMotors() {
