@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 
 // 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
-enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown }
+enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown, goHome }
 enum UploadFlag { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
 enum PulseStatus { nextPulse, reuploadPulse, finishedPulses }
 enum MenuSelection { strokeWidth, brushColor, settingMenu }
