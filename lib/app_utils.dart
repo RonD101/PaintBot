@@ -52,6 +52,7 @@ class DrawingPainter extends CustomPainter {
       }
     }
   }
+
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }
