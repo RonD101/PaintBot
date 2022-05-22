@@ -12,8 +12,8 @@ enum PointType { regular, dummyUp, dummyDown }
 const Offset dummyOffset = Offset(-1, -1);
 const double a4Width = 297;
 const double a4Height = 210;
-const double pixelToMM = 0.26458333;
-const double mmToStep = 1; // currently a placeholder, TODO according to stepper specs
+const double pixelToMM = 0.26458333; // mms per pixel
+const double mmToStep = 12.5; // motor steps per mm
 const int pulseCapacity = 500;
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
