@@ -1,16 +1,23 @@
 import 'dart:math';
 import 'app_utils.dart';
 import 'dart:ui';
+import 'dart:math';
 
 List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
-  final double xScale = a4Width / (width * pixelToMM);
-  final double yScale = a4Height / (height * pixelToMM);
+  final double xScale_mm= = (a4Width) / (width*pixelToMM);
+  final double yScale_mm = (a4Height) / (height*pixelToMM);
+  final double scale_mm = min(xScale_mm, yScale_mm);
+  final double scale = scale_mm * mmToStep;
+  // to be determined by paper position relative to 0,0 -- likely acquired from user config
+  final double xBase = 0;
+  final double yBase = 0;
+
   List<DrawingPoint> bresenhamPoints = [];
   List<DrawingPoint> scaledPoints = [];
   // scaledPoints.add(Point(0, height * yScale)); // bresenham from robot start to first point.
   for (var cur in points) {
     scaledPoints.add(DrawingPoint(
-        pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale),
+        pointLocation: Offset(xBase + cur.pointLocation.dx*scale, yBase + cur.pointLocation.dy*yScale),
         paint: cur.paint,
         pointType: cur.pointType));
   }
