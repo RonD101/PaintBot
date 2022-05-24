@@ -14,7 +14,6 @@ const Offset redOffset = Offset(5, 100);
 const Offset waterOffset = Offset(5, 300);
 const double a4Width = 297;
 const double a4Height = 210;
-const double pixelToMM = 0.26458333; // mms per pixel
 const double mmToStep = 12.5; // motor steps per mm
 const int pulseCapacity = 500;
 const int travelDistInsideCup = 50;
