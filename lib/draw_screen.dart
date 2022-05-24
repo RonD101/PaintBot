@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'bresenham_algo.dart';
 import 'upload_handler.dart';
 import 'app_utils.dart';
+import 'robot_test.dart';
 
 class DrawerScreen extends StatefulWidget {
   final double width;
@@ -205,6 +206,7 @@ class DrawState extends State<DrawerScreen> {
     await movesRef.remove();
     await numOfMovesRef.remove();
     await flagRef.remove();
+    drawFullWidth();
   }
 
   void undoHandler() async {
