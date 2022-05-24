@@ -25,15 +25,13 @@ class PaintBotApp extends StatelessWidget {
                   var pixRatio = MediaQuery.of(context).devicePixelRatio;
                   final double width = MediaQuery.of(context).size.width;
                   final double height = MediaQuery.of(context).size.height;
-                  debugPrint("width = " + width.toString() + "height = " + height.toString());
-                  debugPrint("pixRatio = " + pixRatio.toString());
                   debugPrint("num of actual pixel width ${width * pixRatio}");
                   debugPrint("num of actual pixel height ${height * pixRatio}");
 
                   if (snapshot.hasError) {
                     return const Text("Something is wrong");
                   } else if (snapshot.hasData) {
-                    return DrawerScreen(width: width, height: height);
+                    return DrawerScreen(width: width , height: height );
                   } else {
                     return const Center(
                         child: CircularProgressIndicator(

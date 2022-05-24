@@ -12,8 +12,8 @@ enum PointType { regular, dummyUp, dummyDown }
 const Offset dummyOffset = Offset(-1, -1);
 const Offset redOffset = Offset(5, 100);
 const Offset waterOffset = Offset(5, 300);
-const double a4Width = 297;
-const double a4Height = 210;
+const double a4Width = 3712.5;
+const double a4Height = 2625;
 const double mmToStep = 12.5; // motor steps per mm
 const int pulseCapacity = 500;
 const int travelDistInsideCup = 50;

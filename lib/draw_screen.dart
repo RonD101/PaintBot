@@ -206,7 +206,7 @@ class DrawState extends State<DrawerScreen> {
     await movesRef.remove();
     await numOfMovesRef.remove();
     await flagRef.remove();
-    drawFullWidth();
+    drawRightUpAllWay();
   }
 
   void undoHandler() async {

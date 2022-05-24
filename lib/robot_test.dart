@@ -17,10 +17,19 @@ void drawRightLine() async {
 
 void drawFullWidth() async {
   List<DrawingPoint> points = [];
-  points.add(DrawingPoint(paint: Paint(), pointLocation: const Offset(0, 0), pointType: PointType.regular));
   points.add(DrawingPoint(paint: Paint(), pointLocation: dummyOffset, pointType: PointType.dummyDown));
+  points.add(DrawingPoint(paint: Paint(), pointLocation: const Offset(0, 0), pointType: PointType.regular));
   points.add(DrawingPoint(paint: Paint(), pointLocation: const Offset(683.43, 0), pointType: PointType.regular));
 
+  await uploadTest(points);
+}
+
+void drawRightUpAllWay() async {
+  List<DrawingPoint> points = [];
+  points.add(DrawingPoint(paint: Paint(), pointLocation: dummyOffset, pointType: PointType.dummyDown));
+  points.add(DrawingPoint(paint: Paint(), pointLocation: const Offset(0, 388.42857), pointType: PointType.regular));
+  points.add(DrawingPoint(paint: Paint(), pointLocation: const Offset(644.42857, 388.42857), pointType: PointType.regular));
+  points.add(DrawingPoint(paint: Paint(), pointLocation: const Offset(644.42857, 0), pointType: PointType.regular));
   await uploadTest(points);
 }
 
