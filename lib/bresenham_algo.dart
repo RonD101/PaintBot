@@ -10,8 +10,16 @@ List<DrawingPoint> globalBresenhamAlgo(
   final double scale_mm = min(xScale_mm, yScale_mm);
   final double scale = scale_mm * mmToStep;
   // to be determined by paper position relative to 0,0 -- likely acquired from user config
-  final double xBase = 0;
-  final double yBase = 0;
+  final double xBase;
+  final double yBase;
+
+  if (scale_mm == xScale_mm) {
+    xBase = 0;
+    yBase = ((a4Height - height*scale_mm)/2)*mmToStep + 0;
+  } else {
+    xBase = ((a4Width - width*scale_mm)/2)*mmToStep + 0;
+    yBase = 0;
+  }
 
   List<DrawingPoint> bresenhamPoints = [];
   List<DrawingPoint> scaledPoints = [];
