@@ -207,7 +207,7 @@ class DrawState extends State<DrawerScreen> {
     await flagRef.remove();
   }
 
-  void undoHandler() {
+  void undoHandler() async {
     if (points.isNotEmpty) {
       points.removeLast();
     }
@@ -220,6 +220,11 @@ class DrawState extends State<DrawerScreen> {
     if (points.isEmpty) {
       displayMenu = false;
     }
+    List<RobotMove> goHomeMoves = [];
+    goHomeMoves.add(RobotMove.servoUp);
+    goHomeMoves.add(RobotMove.goHome);
+    final List<CompMove> goHomeCompressed = compressMoves(goHomeMoves);
+    await startUploading(goHomeCompressed);
   }
 
   void uploadHandler() async {

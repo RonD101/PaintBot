@@ -3,17 +3,20 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 
 // 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
-enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown }
+enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown, goHome }
 enum UploadFlag { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
 enum PulseStatus { nextPulse, reuploadPulse, finishedPulses }
 enum MenuSelection { strokeWidth, brushColor, settingMenu }
 enum PointType { regular, dummyUp, dummyDown }
 
 const Offset dummyOffset = Offset(-1, -1);
+const Offset redOffset = Offset(5, 100);
+const Offset waterOffset = Offset(5, 300);
 const double a4Width = 297;
 const double a4Height = 210;
-const double pixelToMM = 0.26458333;
+const double mmToStep = 12.5; // motor steps per mm
 const int pulseCapacity = 500;
+const int travelDistInsideCup = 50;
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
@@ -52,6 +55,7 @@ class DrawingPainter extends CustomPainter {
       }
     }
   }
+
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
 }

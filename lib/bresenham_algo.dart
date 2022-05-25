@@ -1,16 +1,42 @@
 import 'dart:math';
 import 'app_utils.dart';
 import 'dart:ui';
+import 'dart:math';
 
-List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, double height) {
-  final double xScale = a4Width / (width * pixelToMM);
-  final double yScale = a4Height / (height * pixelToMM);
+List<DrawingPoint> globalBresenhamAlgo(
+    List<DrawingPoint> points, double width, double height) {
+  final double xScale_mm = a4Width / width;
+  final double yScale_mm = a4Height / height;
+  final double scale_mm = min(xScale_mm, yScale_mm);
+  final double scale = scale_mm * mmToStep;
+  // to be determined by paper position relative to 0,0 -- likely acquired from user config
+  final double xBase;
+  final double yBase;
+
+  if (scale_mm == xScale_mm) {
+    xBase = 0;
+    yBase = ((a4Height - height*scale_mm)/2)*mmToStep + 0;
+  } else {
+    xBase = ((a4Width - width*scale_mm)/2)*mmToStep + 0;
+    yBase = 0;
+  }
+
   List<DrawingPoint> bresenhamPoints = [];
   List<DrawingPoint> scaledPoints = [];
+
+  // DEBUG CODE - MANUAL POINTS INSERTION
+  // Offset off1 = Offset(0.0,0.0);
+  // Offset off2 = Offset(width,0.0);
+  // DrawingPoint p1 = DrawingPoint(pointLocation:off1, paint:Paint(), pointType:PointType.regular);
+  // DrawingPoint p2 = DrawingPoint(pointLocation:off2, paint:Paint(), pointType:PointType.regular);
+  // points = [points[0], p1, p2, points.last];
+  // END OF DEBUG CODE
+
   // scaledPoints.add(Point(0, height * yScale)); // bresenham from robot start to first point.
   for (var cur in points) {
     scaledPoints.add(DrawingPoint(
-        pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale),
+        pointLocation: Offset(xBase + cur.pointLocation.dx * scale,
+            yBase + cur.pointLocation.dy * scale),
         paint: cur.paint,
         pointType: cur.pointType));
   }
@@ -19,7 +45,8 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
     final DrawingPoint next = scaledPoints[i + 1];
     final Offset curLoc = cur.pointLocation;
     final Offset nextLoc = next.pointLocation;
-    if (cur.pointType == PointType.regular && next.pointType != PointType.regular) {
+    if (cur.pointType == PointType.regular &&
+        next.pointType != PointType.regular) {
       continue;
     }
     if (cur.pointType == PointType.dummyUp) {
@@ -27,13 +54,13 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
       continue;
     } else if (cur.pointType == PointType.dummyDown) {
       final Offset prevLoc = scaledPoints[i - 2].pointLocation;
-      bresenhamPoints +=
-          localBresenhamAlgo(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
+      bresenhamPoints += localBresenhamAlgo(prevLoc.dx.round(),
+          prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
       bresenhamPoints.add(cur);
       i++;
     } else {
-      bresenhamPoints +=
-          localBresenhamAlgo(curLoc.dx.round(), curLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
+      bresenhamPoints += localBresenhamAlgo(curLoc.dx.round(),
+          curLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
     }
   }
   return bresenhamPoints;
@@ -48,7 +75,9 @@ List<DrawingPoint> localBresenhamAlgo(int x0, int y0, int x1, int y1) {
   var err = dx - dy;
   while (true) {
     bresenhamPoints.add(DrawingPoint(
-        pointLocation: Offset(x0.toDouble(), y0.toDouble()), paint: Paint(), pointType: PointType.regular));
+        pointLocation: Offset(x0.toDouble(), y0.toDouble()),
+        paint: Paint(),
+        pointType: PointType.regular));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }
