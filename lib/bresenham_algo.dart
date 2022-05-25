@@ -12,19 +12,17 @@ List<DrawingPoint> globalBresenhamAlgo(List<DrawingPoint> points, double width, 
   // DEBUG CODE - MANUAL POINTS INSERTION
   // Offset off1 = Offset(0.0,0.0);
   // Offset off2 = Offset(width,0.0);
-  // DrawingPoint p1 = DrawingPoint(pointLocation:off1, paint:Paint(), pointType:PointType.regular);
-  // DrawingPoint p2 = DrawingPoint(pointLocation:off2, paint:Paint(), pointType:PointType.regular);
+  // DrawingPoint p1 = DrawingPoint(pointLocation:off1, pointType:PointType.regular);
+  // DrawingPoint p2 = DrawingPoint(pointLocation:off2, pointType:PointType.regular);
   // points = [points[0], p1, p2, points.last];
   // END OF DEBUG CODE
 
   // scaledPoints.add(Point(0, height * yScale)); // bresenham from robot start to first point.
   for (var cur in points) {
-    cur.printPoint();
     scaledPoints.add(DrawingPoint(
         pointLocation: Offset(cur.pointLocation.dx * xScale, cur.pointLocation.dy * yScale),
-        paint: cur.paint,
-        pointType: cur.pointType));
-    scaledPoints.last.printPoint();
+        pointType: cur.pointType,
+        paint: Paint()));
   }
   for (int i = 1; i < scaledPoints.length - 1; i++) {
     final DrawingPoint cur = scaledPoints[i];
@@ -60,7 +58,7 @@ List<DrawingPoint> localBresenhamAlgo(int x0, int y0, int x1, int y1) {
   var err = dx - dy;
   while (true) {
     bresenhamPoints.add(DrawingPoint(
-        pointLocation: Offset(x0.toDouble(), y0.toDouble()), paint: Paint(), pointType: PointType.regular));
+        pointLocation: Offset(x0.toDouble(), y0.toDouble()), pointType: PointType.regular, paint: Paint()));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }

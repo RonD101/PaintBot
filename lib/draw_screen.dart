@@ -32,9 +32,12 @@ class DrawState extends State<DrawerScreen> {
                 child: Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[createStrokeWidget(), createColorsWidget(), createSettingsWidget()]),
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
+                        createStrokeWidget(),
+                        createColorsWidget(),
+                        createSettingsWidget(),
+                        createTestWidget()
+                      ]),
                       createMenuWidget()
                     ])))),
         body: drawUserInput(context));
@@ -93,12 +96,15 @@ class DrawState extends State<DrawerScreen> {
     if (selectedMenu == MenuSelection.settingMenu) {
       return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getSettingsList());
     }
+    if (selectedMenu == MenuSelection.testMenu) {
+      return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getTestList());
+    }
     throw Exception("Invalid menu selected");
   }
 
   IconButton createStrokeWidget() {
     return IconButton(
-        icon: const Icon(Icons.line_weight),
+        icon: const Icon(BotIcons.stroke),
         onPressed: () {
           setState(() {
             if (selectedMenu == MenuSelection.strokeWidth) {
@@ -113,7 +119,7 @@ class DrawState extends State<DrawerScreen> {
 
   IconButton createColorsWidget() {
     return IconButton(
-        icon: const Icon(Icons.color_lens_outlined),
+        icon: const Icon(BotIcons.color),
         onPressed: () {
           setState(() {
             if (selectedMenu == MenuSelection.brushColor) {
@@ -128,7 +134,7 @@ class DrawState extends State<DrawerScreen> {
 
   IconButton createSettingsWidget() {
     return IconButton(
-        icon: const Icon(Icons.settings_outlined),
+        icon: const Icon(BotIcons.settings),
         onPressed: () {
           setState(() {
             if (selectedMenu == MenuSelection.settingMenu) {
@@ -137,6 +143,21 @@ class DrawState extends State<DrawerScreen> {
               displayMenu = true;
             }
             selectedMenu = MenuSelection.settingMenu;
+          });
+        });
+  }
+
+  IconButton createTestWidget() {
+    return IconButton(
+        icon: const Icon(BotIcons.test),
+        onPressed: () {
+          setState(() {
+            if (selectedMenu == MenuSelection.testMenu) {
+              displayMenu = !displayMenu;
+            } else {
+              displayMenu = true;
+            }
+            selectedMenu = MenuSelection.testMenu;
           });
         });
   }
@@ -151,9 +172,17 @@ class DrawState extends State<DrawerScreen> {
 
   getSettingsList() {
     return [
-      createSettingOption(const Icon(Icons.undo_outlined)),
-      createSettingOption(const Icon(Icons.restart_alt_outlined)),
-      createSettingOption(const Icon(Icons.upload_file_outlined))
+      createSettingOption(BotIcons.undo),
+      createSettingOption(BotIcons.restart),
+      createSettingOption(BotIcons.upload)
+    ];
+  }
+
+  getTestList() {
+    return [
+      createTestOption(BotIcons.square),
+      createTestOption(BotIcons.rightUp),
+      createTestOption(BotIcons.goHome),
     ];
   }
 
@@ -179,22 +208,41 @@ class DrawState extends State<DrawerScreen> {
         child: ClipOval(child: Container(height: height, width: width, color: Colors.black)));
   }
 
-  Widget createSettingOption(Icon selctedSetting) {
+  Widget createSettingOption(IconData selctedSetting) {
     return GestureDetector(
         onTap: () {
           setState(() {
-            if (selctedSetting.icon == Icons.restart_alt_outlined) {
+            if (selctedSetting == BotIcons.restart) {
               restartHandler();
             }
-            if (selctedSetting.icon == Icons.undo_outlined) {
+            if (selctedSetting == BotIcons.undo) {
               undoHandler();
             }
-            if (selctedSetting.icon == Icons.upload_file_outlined) {
+            if (selctedSetting == BotIcons.upload) {
               uploadHandler();
             }
           });
         },
-        child: selctedSetting);
+        child: Icon(selctedSetting));
+  }
+
+  Widget createTestOption(IconData selctedTest) {
+    return GestureDetector(
+        onTap: () {
+          setState(() {
+            displayMenu = false;
+            if (selctedTest == BotIcons.square) {
+              squareTest();
+            }
+            if (selctedTest == BotIcons.rightUp) {
+              rightUpAllWayTest();
+            }
+            if (selctedTest == BotIcons.goHome) {
+              goHomeTest();
+            }
+          });
+        },
+        child: Icon(selctedTest));
   }
 
   void restartHandler() async {
@@ -206,7 +254,6 @@ class DrawState extends State<DrawerScreen> {
     await movesRef.remove();
     await numOfMovesRef.remove();
     await flagRef.remove();
-    drawRightUpAllWay();
   }
 
   void undoHandler() async {
@@ -222,11 +269,6 @@ class DrawState extends State<DrawerScreen> {
     if (points.isEmpty) {
       displayMenu = false;
     }
-    List<RobotMove> goHomeMoves = [];
-    goHomeMoves.add(RobotMove.servoUp);
-    goHomeMoves.add(RobotMove.goHome);
-    final List<CompMove> goHomeCompressed = compressMoves(goHomeMoves);
-    await startUploading(goHomeCompressed);
   }
 
   void uploadHandler() async {

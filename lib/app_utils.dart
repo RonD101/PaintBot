@@ -6,7 +6,8 @@ import 'dart:ui';
 enum RobotMove { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown, goHome }
 enum UploadFlag { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
 enum PulseStatus { nextPulse, reuploadPulse, finishedPulses }
-enum MenuSelection { strokeWidth, brushColor, settingMenu }
+enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
+enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType { regular, dummyUp, dummyDown }
 
 const Offset dummyOffset = Offset(-1, -1);
@@ -15,8 +16,8 @@ const Offset waterOffset = Offset(5, 300);
 const double a4Width = 3712.5;
 const double a4Height = 2625;
 const double mmToStep = 12.5; // motor steps per mm
+const double distInCup = 50.0;
 const int pulseCapacity = 500;
-const int travelDistInsideCup = 50;
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
@@ -32,7 +33,7 @@ class DrawingPoint {
   final Paint paint;
   final Offset pointLocation;
   final PointType pointType;
-  const DrawingPoint({required this.pointLocation, required this.paint, required this.pointType});
+  const DrawingPoint({required this.pointLocation, required this.pointType, required this.paint});
   void printPoint() {
     debugPrint(
         pointLocation.dx.round().toString() + " " + pointLocation.dy.round().toString() + " " + pointType.toString());
@@ -58,4 +59,17 @@ class DrawingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(DrawingPainter oldDelegate) => true;
+}
+
+class BotIcons {
+  static const IconData undo = Icons.undo_outlined;
+  static const IconData restart = Icons.restart_alt_outlined;
+  static const IconData upload = Icons.upload_file_outlined;
+  static const IconData square = Icons.crop_square_outlined;
+  static const IconData rightUp = Icons.turn_right_sharp;
+  static const IconData goHome = Icons.home_outlined;
+  static const IconData stroke = Icons.line_weight;
+  static const IconData color = Icons.color_lens_outlined;
+  static const IconData settings = Icons.settings_outlined;
+  static const IconData test = Icons.checklist_outlined;
 }

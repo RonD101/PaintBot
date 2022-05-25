@@ -22,16 +22,12 @@ class PaintBotApp extends StatelessWidget {
             home: FutureBuilder(
                 future: _fbApp,
                 builder: (context, snapshot) {
-                  var pixRatio = MediaQuery.of(context).devicePixelRatio;
                   final double width = MediaQuery.of(context).size.width;
                   final double height = MediaQuery.of(context).size.height;
-                  debugPrint("num of actual pixel width ${width * pixRatio}");
-                  debugPrint("num of actual pixel height ${height * pixRatio}");
-
                   if (snapshot.hasError) {
                     return const Text("Something is wrong");
                   } else if (snapshot.hasData) {
-                    return DrawerScreen(width: width , height: height );
+                    return DrawerScreen(width: width, height: height);
                   } else {
                     return const Center(
                         child: CircularProgressIndicator(
