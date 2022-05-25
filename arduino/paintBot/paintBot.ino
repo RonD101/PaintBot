@@ -10,10 +10,10 @@
 //Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 #include <ESP32Servo.h>
-//#define WIFI_SSID "TechPublic"
-//#define WIFI_PASSWORD ""
- #define WIFI_SSID "RonDiPhone"
- #define WIFI_PASSWORD "12345678"
+#define WIFI_SSID "TechPublic"
+#define WIFI_PASSWORD ""
+// #define WIFI_SSID "RonDiPhone"
+// #define WIFI_PASSWORD "12345678"
 #define API_KEY "AIzaSyAIVdnB_mJA6_ZV5G9ctjWO7aQRLJk_DjQ"
 // Insert RTDB URLefine the RTDB URL */
 #define DATABASE_URL "https://paintbot-a1067-default-rtdb.firebaseio.com/"
@@ -26,8 +26,12 @@
 #define SERVO_PIN 12
 #define HOME_LEFT_PIN 14
 #define HOME_DOWN_PIN 13
+//This define is for web serial debuging
+//#define WEB_DEBUG
 
+#ifdef WEB_DEBUG
 AsyncWebServer server(80);
+#endif
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -92,8 +96,10 @@ void setup() {
 
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
-  WebSerial.begin(&server);
-  server.begin();
+  #ifdef WEB_DEBUG
+    WebSerial.begin(&server);
+    server.begin();
+  #endif
   delay(500);
 }
 
@@ -108,8 +114,8 @@ void loop() {
   if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)) {
     sendDataPrevMillis = millis();
     if (Firebase.RTDB.getInt(&fbdo, "/Flag")) {
-      WebSerial.print("Got flag = ");
-      WebSerial.println(fbdo.intData());
+      debugPrint("Got flag = ");
+      debugPrintln(fbdo.intData());
       flag = fbdo.intData();
       if (flag == 0)
         return;
@@ -118,8 +124,8 @@ void loop() {
     }
     if (flag == 4) {
         if (Firebase.RTDB.getInt(&fbdo, "/numOfMoves")) {
-        WebSerial.print("Got number of moves = ");
-        WebSerial.println(fbdo.intData());
+        debugPrint("Got number of moves = ");
+        debugPrintln(fbdo.intData());
         Serial.print("Got number of moves = ");
         Serial.println(fbdo.intData());
         numOfMoves = fbdo.intData();
@@ -129,12 +135,12 @@ void loop() {
         }
     }
     if (flag == 2) {
-      WebSerial.print("Amount of pulse got = ");
-      WebSerial.println(amountOfDataPackages);
+      debugPrint("Amount of pulse got = ");
+      debugPrintln(amountOfDataPackages);
       amountOfDataPackages = 0;
-      WebSerial.print("Start Draw ");
-      WebSerial.print(numOfMoves);
-      WebSerial.println(" points!");
+      debugPrint("Start Draw ");
+      debugPrint(numOfMoves);
+      debugPrintln(" points!");
       for (int i = 0; i < numOfMoves; i = i + 2) {
         int len = movesArray[i];
         int elem = movesArray[i + 1];
@@ -179,11 +185,11 @@ void loop() {
               Firebase.RTDB.setInt(&fbdo, "/hight", pageHight);
           }
           else
-              WebSerial.println("Error got unexpected robot move");
+              debugPrintln("Error got unexpected robot move");
         }
       }
       Serial.println("End Draw!");
-      WebSerial.println("End Draw!");
+      debugPrintln("End Draw!");
       delete[] movesArray;
     }
     if (flag == 1) {
@@ -191,18 +197,18 @@ void loop() {
         Serial.println("Get array ok");
         FirebaseJsonArray arr = fbdo.jsonArray();
         FirebaseJsonData currValue;
-        WebSerial.print("Array size: ");
-        WebSerial.println(arr.size());
+        debugPrint("Array size: ");
+        debugPrintln(arr.size());
         arr.get(currValue, 0);
         int amountOfElemInArray = currValue.to<int>();
         if (amountOfElemInArray + 1 != arr.size()) {
           if (Firebase.RTDB.setInt(&fbdo, "/Flag", 3)){
             Serial.println("Set Flag to 3");
-            WebSerial.println("Set Flag to 3 because of array sizes that doesn't match");
-            WebSerial.print("first element: ");
-            WebSerial.println(amountOfElemInArray);
-            WebSerial.print("arr size: ");
-            WebSerial.println(arr.size());
+            debugPrintln("Set Flag to 3 because of array sizes that doesn't match");
+            debugPrint("first element: ");
+            debugPrintln(amountOfElemInArray);
+            debugPrint("arr size: ");
+            debugPrintln(arr.size());
             return;
           }
           else {
@@ -215,7 +221,7 @@ void loop() {
               movesArray[1000 * amountOfDataPackages + i] = currValue.to<int>();
             }
 
-          WebSerial.println("Finished load!");
+          debugPrintln("Finished load!");
           amountOfDataPackages += 1;
         }
       }
@@ -251,8 +257,9 @@ void loop() {
 void printDebugErrors() {
   Serial.println("FAILED");
   Serial.println("REASON: " + fbdo.errorReason());
-  WebSerial.println("FAILED");
-  WebSerial.println("REASON: " + fbdo.errorReason());
+  debugPrintln("FAILED");
+  debugPrint("REASON: ");
+  debugPrintln(fbdo.errorReason());
 }
 
 void testRobotMovement() {
@@ -284,7 +291,7 @@ void testRobotMovement() {
 void goHome() {
   pageWidth = 0;
   pageHight = 0;
-  WebSerial.println("Start go home");
+  debugPrintln("Start go home");
   Serial.println("Start go home");
   int homeLeftState = digitalRead(HOME_LEFT_PIN);
   int homeDownState = digitalRead(HOME_DOWN_PIN);
@@ -293,19 +300,19 @@ void goHome() {
     pageHight += 1;
     homeDownState = digitalRead(HOME_DOWN_PIN);
   }
-  WebSerial.println("Finish go down");
+  debugPrintln("Finish go down");
   Serial.println("Finish go down");
   while (homeLeftState == HIGH) {
     stepLeft();
     pageWidth+= 1;
     homeLeftState = digitalRead(HOME_LEFT_PIN);
   }
-  WebSerial.println("Finish go Left");
+  debugPrintln("Finish go Left");
   Serial.println("Finish go Left");
-  WebSerial.print("X counter = ");
-  WebSerial.println(pageWidth);
-  WebSerial.print("Y counter = ");
-  WebSerial.println(pageHight);
+  debugPrint("X counter = ");
+  debugPrintln(pageWidth);
+  debugPrint("Y counter = ");
+  debugPrintln(pageHight);
 }
 
 void stepMotors() {
@@ -382,4 +389,40 @@ void stepDown() {
   digitalWrite(LEFT_MOTOR_DIR_PIN, shouldSwitchLeftMotorDir ? LOW : HIGH);
   digitalWrite(RIGHT_MOTOR_DIR_PIN, shouldSwitchRightMotorDir ? HIGH : LOW);
   stepMotors();
+}
+
+void debugPrint(char* str) {
+  #ifdef WEB_DEBUG
+    WebSerial.print(str);
+  #endif
+}
+
+void debugPrintln(char* str) {
+  #ifdef WEB_DEBUG
+    WebSerial.println(str);
+  #endif
+}
+
+void debugPrint(int str) {
+  #ifdef WEB_DEBUG
+    WebSerial.print(str);
+  #endif
+}
+
+void debugPrintln(int str) {
+  #ifdef WEB_DEBUG
+    WebSerial.println(str);
+  #endif
+}
+
+void debugPrint(String str) {
+  #ifdef WEB_DEBUG
+    WebSerial.print(str);
+  #endif
+}
+
+void debugPrintln(String str) {
+  #ifdef WEB_DEBUG
+    WebSerial.println(str);
+  #endif
 }
