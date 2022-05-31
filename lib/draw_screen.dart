@@ -35,10 +35,10 @@ class DrawState extends State<DrawerScreen> {
                       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
                         createStrokeWidget(),
                         createColorsWidget(),
-                        createSettingsWidget(),
-                        createTestWidget()
+                        createTestWidget(),
+                        createSettingsWidget()
                       ]),
-                      createMenuWidget()
+                      Visibility(child: selectCurrentMenu(), visible: displayMenu)
                     ])))),
         body: drawUserInput(context));
   }
@@ -49,8 +49,8 @@ class DrawState extends State<DrawerScreen> {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
             points.add(DrawingPoint(
-                pointType: PointType.regular,
-                pointLocation: renderBox.globalToLocal(details.globalPosition),
+                type: PointType.regular,
+                location: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
@@ -62,8 +62,8 @@ class DrawState extends State<DrawerScreen> {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
             points.add(DrawingPoint(
-                pointType: PointType.dummyDown,
-                pointLocation: renderBox.globalToLocal(details.globalPosition),
+                type: PointType.dummyDown,
+                location: renderBox.globalToLocal(details.globalPosition),
                 paint: Paint()
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
@@ -73,17 +73,10 @@ class DrawState extends State<DrawerScreen> {
         },
         onPanEnd: (details) {
           setState(() {
-            points.add(DrawingPoint(pointType: PointType.dummyUp, pointLocation: dummyOffset, paint: Paint()));
+            points.add(upPoint);
           });
         },
         child: CustomPaint(size: Size.infinite, painter: DrawingPainter(pointsList: points)));
-  }
-
-  AnimatedOpacity createMenuWidget() {
-    return AnimatedOpacity(
-        opacity: displayMenu ? 1 : 0,
-        duration: const Duration(milliseconds: 600),
-        child: Visibility(child: selectCurrentMenu(), visible: displayMenu));
   }
 
   Row selectCurrentMenu() {
@@ -93,11 +86,11 @@ class DrawState extends State<DrawerScreen> {
     if (selectedMenu == MenuSelection.brushColor) {
       return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getColoredCircleList());
     }
-    if (selectedMenu == MenuSelection.settingMenu) {
-      return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getSettingsList());
-    }
     if (selectedMenu == MenuSelection.testMenu) {
       return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getTestList());
+    }
+    if (selectedMenu == MenuSelection.settingMenu) {
+      return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getSettingsList());
     }
     throw Exception("Invalid menu selected");
   }
@@ -179,11 +172,7 @@ class DrawState extends State<DrawerScreen> {
   }
 
   getTestList() {
-    return [
-      createTestOption(BotIcons.square),
-      createTestOption(BotIcons.rightUp),
-      createTestOption(BotIcons.goHome),
-    ];
+    return [createTestOption(BotIcons.square), createTestOption(BotIcons.rightUp), createTestOption(BotIcons.goHome)];
   }
 
   Widget createColoredCircle(Color color) {
@@ -214,11 +203,9 @@ class DrawState extends State<DrawerScreen> {
           setState(() {
             if (selctedSetting == BotIcons.restart) {
               restartHandler();
-            }
-            if (selctedSetting == BotIcons.undo) {
+            } else if (selctedSetting == BotIcons.undo) {
               undoHandler();
-            }
-            if (selctedSetting == BotIcons.upload) {
+            } else if (selctedSetting == BotIcons.upload) {
               uploadHandler();
             }
           });
@@ -233,11 +220,9 @@ class DrawState extends State<DrawerScreen> {
             displayMenu = false;
             if (selctedTest == BotIcons.square) {
               squareTest();
-            }
-            if (selctedTest == BotIcons.rightUp) {
+            } else if (selctedTest == BotIcons.rightUp) {
               rightUpAllWayTest();
-            }
-            if (selctedTest == BotIcons.goHome) {
+            } else if (selctedTest == BotIcons.goHome) {
               goHomeTest();
             }
           });
@@ -261,7 +246,7 @@ class DrawState extends State<DrawerScreen> {
       points.removeLast();
     }
     for (int i = points.length - 1; i >= 0; i--) {
-      if (points[i].pointLocation == dummyOffset) {
+      if (points[i].location == dummyOffset) {
         break;
       }
       points.removeLast();
@@ -273,7 +258,11 @@ class DrawState extends State<DrawerScreen> {
 
   void uploadHandler() async {
     displayMenu = false;
-    final List<DrawingPoint> bresenhamPoints = globalBresenhamAlgo(points, widget.width, widget.height);
+    if (points.length < 2) {
+      return;
+    }
+    final List<DrawingPoint> scaledPoints = getScaledPoints(points, width, height);
+    final List<DrawingPoint> bresenhamPoints = globalBresenham(scaledPoints);
     final List<RobotMove> robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     final List<CompMove> compressedMoves = compressMoves(robotMoves);
     await startUploading(compressedMoves);

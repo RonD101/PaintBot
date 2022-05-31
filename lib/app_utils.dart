@@ -11,13 +11,16 @@ enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType { regular, dummyUp, dummyDown }
 
 const Offset dummyOffset = Offset(-1, -1);
-const Offset redOffset = Offset(5, 100);
-const Offset waterOffset = Offset(5, 300);
+const Offset redOffset = Offset(50, 200);
+const Offset waterOffset = Offset(50, 200);
 const double a4Width = 3712.5;
 const double a4Height = 2625;
 const double mmToStep = 12.5; // motor steps per mm
 const double distInCup = 50.0;
 const int pulseCapacity = 500;
+double navBarHeight = 0;
+final DrawingPoint upPoint = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
+final DrawingPoint downPoint = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");
@@ -31,12 +34,11 @@ class CompMove {
 
 class DrawingPoint {
   final Paint paint;
-  final Offset pointLocation;
-  final PointType pointType;
-  const DrawingPoint({required this.pointLocation, required this.pointType, required this.paint});
+  final Offset location;
+  final PointType type;
+  const DrawingPoint({required this.location, required this.type, required this.paint});
   void printPoint() {
-    debugPrint(
-        pointLocation.dx.round().toString() + " " + pointLocation.dy.round().toString() + " " + pointType.toString());
+    debugPrint(location.dx.round().toString() + " " + location.dy.round().toString() + " " + type.toString());
   }
 }
 
@@ -46,8 +48,8 @@ class DrawingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (int i = 0; i < pointsList.length - 1; i++) {
-      final Offset curLocation = pointsList[i].pointLocation;
-      final Offset nextLocation = pointsList[i + 1].pointLocation;
+      final Offset curLocation = pointsList[i].location;
+      final Offset nextLocation = pointsList[i + 1].location;
       if (curLocation != dummyOffset && nextLocation != dummyOffset) {
         canvas.drawLine(curLocation, nextLocation, pointsList[i].paint);
       } else if (curLocation != dummyOffset && nextLocation == dummyOffset) {
