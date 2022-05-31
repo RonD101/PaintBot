@@ -18,7 +18,8 @@ const double a4Height = 2625;
 const double mmToStep = 12.5; // motor steps per mm
 const double distInCup = 50.0;
 const int pulseCapacity = 500;
-double navBarHeight = 0;
+const double xOffset = 0;
+const double yOffset = 0;
 final DrawingPoint upPoint = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
 final DrawingPoint downPoint = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
 

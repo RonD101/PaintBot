@@ -3,14 +3,23 @@ import 'package:flutter/material.dart';
 import 'app_utils.dart';
 
 List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double height) {
+  height -= kBottomNavigationBarHeight;
   final double xScale = a4Width / width;
   final double yScale = a4Height / height;
   final double fScale = min(xScale, yScale);
-  navBarHeight = kBottomNavigationBarHeight * yScale;
+  final double xBase;
+  final double yBase;
+  if (fScale == xScale) {
+    xBase = 0;
+    yBase = ((a4Height - height * fScale) / 2) + xOffset;
+  } else {
+    xBase = ((a4Width - width * fScale) / 2) + yOffset;
+    yBase = 0;
+  }
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
-    scaledPoints.add(DrawingPoint(
-        location: Offset(cur.location.dx * fScale, cur.location.dy * fScale), type: cur.type, paint: Paint()));
+    final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + cur.location.dy * fScale);
+    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: Paint()));
   }
   return scaledPoints;
 }
@@ -19,8 +28,7 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> scaledPoints) {
   final Offset startingPoint = scaledPoints[2].location;
   List<DrawingPoint> bresenhamPoints = [];
   bresenhamPoints.add(upPoint);
-  bresenhamPoints +=
-      localBresenham(0, (a4Height - navBarHeight).round(), startingPoint.dx.round(), startingPoint.dy.round());
+  bresenhamPoints += localBresenham(0, a4Height.round(), startingPoint.dx.round(), startingPoint.dy.round());
   bresenhamPoints.add(downPoint);
   for (int i = 2; i < scaledPoints.length - 1; i++) {
     final DrawingPoint cur = scaledPoints[i];
