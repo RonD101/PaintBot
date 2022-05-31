@@ -26,8 +26,11 @@ Servo myservo;  // create servo object to control a servo
 
 // Insert RTDB URLefine the RTDB URL */
 #define DATABASE_URL "https://paintbot-a1067-default-rtdb.firebaseio.com/" 
+//#define WEB_DEBUG
 
-AsyncWebServer server(80);
+#ifdef WEB_DEBUG
+  AsyncWebServer server(80);
+#endif
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -39,6 +42,12 @@ unsigned long sendDataPrevMillis = 0;
 int intValue;
 float floatValue;
 bool signupOK = false;
+
+
+// This bools should only be true if we chose different configuration for the motors
+// (like if the motor is upsidedown)
+bool shouldSwitchLeftMotorDir = true;
+bool shouldSwitchRightMotorDir = false;
 
 int motor1Enable = 2;
 int motor1Step = 4;
@@ -113,13 +122,14 @@ void setup() {
   
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
-  WebSerial.begin(&server);
-  server.begin();
+   #ifdef WEB_DEBUG
+     WebSerial.begin(&server);
+     server.begin();
+   #endif
   delay(2000);
 }
 
 int counter = 0;
-int timeLap = 1000;
 int HomeLeftState = 0;
 int HomeDownState = 0;
 bool initLeft = true;
@@ -133,8 +143,8 @@ void loop() {
   if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)) {
     sendDataPrevMillis = millis();
     if (Firebase.RTDB.getInt(&fbdo, "/Flag")) {
-      WebSerial.print("Got flag = ");
-      WebSerial.println(fbdo.intData());
+      debugPrint("Got flag = ");
+      debugPrintln(fbdo.intData());
       flag = fbdo.intData();
       if (flag == 0)
         return;
@@ -143,8 +153,8 @@ void loop() {
     }
     if (flag == 4) {
         if (Firebase.RTDB.getInt(&fbdo, "/NumOfMoves")) {
-        WebSerial.print("Got number of moves = ");
-        WebSerial.println(fbdo.intData());
+        debugPrint("Got number of moves = ");
+        debugPrintln(fbdo.intData());
         Serial.print("Got number of moves = ");
         Serial.println(fbdo.intData());
         NumOfMoves = fbdo.intData();
@@ -154,12 +164,12 @@ void loop() {
         }
     }
     if (flag == 2) {
-      WebSerial.print("Amount of pulse got = ");
-      WebSerial.println(counter);
+      debugPrint("Amount of pulse got = ");
+      debugPrintln(counter);
       counter = 0;
-      WebSerial.print("Start Draw ");
-      WebSerial.print(NumOfMoves);
-      WebSerial.println(" points!");
+      debugPrint("Start Draw ");
+      debugPrint(NumOfMoves);
+      debugPrintln(" points!");
       for (int i = 0; i < NumOfMoves; i = i + 2) {
         int len = movesArray[i];
         int elem = movesArray[i + 1];
@@ -205,11 +215,11 @@ void loop() {
               goHome();
           }
           else
-              WebSerial.println("Error got unexpected robot move");
+              debugPrintln("Error got unexpected robot move");
         }
       }
       Serial.println("End Draw!");
-      WebSerial.println("End Draw!");
+      debugPrintln("End Draw!");
       delete[] movesArray;
     }
     if (flag == 1) {
@@ -217,18 +227,18 @@ void loop() {
         Serial.println("Get array ok");
         FirebaseJsonArray arr = fbdo.jsonArray();
         FirebaseJsonData currValue;
-        WebSerial.print("Array size: ");
-        WebSerial.println(arr.size());
+        debugPrint("Array size: ");
+        debugPrintln(arr.size());
         arr.get(currValue, 0);
         int amountOfElemInArray = currValue.to<int>();
         if (amountOfElemInArray + 1 != arr.size()) {
           if (Firebase.RTDB.setInt(&fbdo, "/Flag", 3)){
             Serial.println("Set Flag to 3");
-            WebSerial.println("Set Flag to 3 because of array sizes that doesn't match");
-            WebSerial.print("first element: ");
-            WebSerial.println(amountOfElemInArray);
-            WebSerial.print("arr size: ");
-            WebSerial.println(arr.size());
+            debugPrintln("Set Flag to 3 because of array sizes that doesn't match");
+            debugPrint("first element: ");
+            debugPrintln(amountOfElemInArray);
+            debugPrint("arr size: ");
+            debugPrintln(arr.size());
             return;
           }
           else {
@@ -241,7 +251,7 @@ void loop() {
               movesArray[1000 * counter + i] = currValue.to<int>();
             }
           
-          WebSerial.println("Finished load!");
+          debugPrintln("Finished load!");
           counter += 1;
         }
       }
@@ -277,41 +287,38 @@ void loop() {
 void printDebugErrors() {
   Serial.println("FAILED");
   Serial.println("REASON: " + fbdo.errorReason());
-  WebSerial.println("FAILED");
-  WebSerial.println("REASON: " + fbdo.errorReason());
+  debugPrintln("FAILED");
+  debugPrintln("REASON: " + fbdo.errorReason());
 }
 
 void mainLoop() {
-   if (counter < timeLap)
+  int timeLap = 1000;
+  for(int i = 0; i < 10 * timeLap; i++) {
+    if (i < timeLap)
     stepRight();
-   if (counter > timeLap && counter < 2 * timeLap)
+    if (i > timeLap && i < 2 * timeLap)
     stepLeft();
-   if (counter > 2 * timeLap && counter <  3 * timeLap)
+    if (i > 2 * timeLap && i <  3 * timeLap)
     stepUp();
-   if (counter > 3 * timeLap && counter < 4 * timeLap)
+    if (i > 3 * timeLap && i < 4 * timeLap)
     stepDown();
-   if (counter > 4 * timeLap && counter < 5 * timeLap)
+    if (i > 4 * timeLap && i < 5 * timeLap)
     stepRightUp();
-   if (counter > 5 * timeLap && counter < 6 * timeLap)
+    if (i > 5 * timeLap && i < 6 * timeLap)
     stepLeftDown();
-   if (counter > 6 * timeLap && counter <  7 * timeLap)
+    if (i > 6 * timeLap && i <  7 * timeLap)
     stepUp();
-   if (counter > 7 * timeLap && counter < 8 * timeLap)
+    if (i > 7 * timeLap && i < 8 * timeLap)
     stepRightDown();
-   if (counter > 8 * timeLap && counter < 9 * timeLap)
+    if (i > 8 * timeLap && i < 9 * timeLap)
     stepLeftUp();
-   if (counter > 9 * timeLap && counter <  10 * timeLap)
+    if (i > 9 * timeLap && i <  10 * timeLap)
     stepDown();
-   if (counter > 10 * timeLap)
-    counter = 0;
-   if (counter % timeLap == 0)
-    delay(500);
-   counter++;
-   delay(1);
+  }
 }
 
 void goHome() {
-  WebSerial.println("Start go home");
+  debugPrintln("Start go home");
   Serial.println("Start go home");
   HomeLeftState = digitalRead(homeLeftPin);
   HomeDownState = digitalRead(homeDownPin);
@@ -319,13 +326,13 @@ void goHome() {
     stepDown();
     HomeDownState = digitalRead(homeDownPin);
   }
-  WebSerial.println("Finish go down");
+  debugPrintln("Finish go down");
   Serial.println("Finish go down");
   while (HomeLeftState == HIGH) {
     stepLeft();
     HomeLeftState = digitalRead(homeLeftPin);
   }
-  WebSerial.println("Finish go Left");
+  debugPrintln("Finish go Left");
   Serial.println("Finish go Left");
 }
 
@@ -345,78 +352,99 @@ void stepMotors() {
   delay(1);
 }
 
-void stepLeftUp() {
-//  digitalWrite(motor1Enable, LOW);
-//  digitalWrite(motor2Enable, HIGH);
+void stepLeftDown() {
   shouldStepMotor1 = true;
   shouldStepMotor2 = false;
-  digitalWrite(motor1Dir, LOW);
-  stepMotors();
-}
-
-void stepRightDown() {
-//  digitalWrite(motor1Enable, LOW);
-//  digitalWrite(motor2Enable, HIGH);
-  shouldStepMotor1 = true;
-  shouldStepMotor2 = false;
-  digitalWrite(motor1Dir, HIGH);
+  digitalWrite(motor1Dir, shouldSwitchLeftMotorDir ? HIGH : LOW);
   stepMotors();
 }
 
 void stepRightUp() {
-//  digitalWrite(motor1Enable, HIGH);
-//  digitalWrite(motor2Enable, LOW);
-  shouldStepMotor1 = false;
-  shouldStepMotor2 = true;
-  digitalWrite(motor2Dir, HIGH);
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = false;
+  digitalWrite(motor1Dir, shouldSwitchLeftMotorDir ? LOW : HIGH);
   stepMotors();
 }
 
-void stepLeftDown() {
-//  digitalWrite(motor1Enable, HIGH);
-//  digitalWrite(motor2Enable, LOW);
+void stepRightDown() {
   shouldStepMotor1 = false;
   shouldStepMotor2 = true;
-  digitalWrite(motor2Dir, LOW);
+  digitalWrite(motor2Dir, shouldSwitchRightMotorDir ? LOW : HIGH);
+  stepMotors();
+}
+
+void stepLeftUp() {
+  shouldStepMotor1 = false;
+  shouldStepMotor2 = true;
+  digitalWrite(motor2Dir, shouldSwitchRightMotorDir ? HIGH : LOW);
   stepMotors();
 }
 
 void stepLeft() {
-//  digitalWrite(motor1Enable, LOW);
-//  digitalWrite(motor2Enable, LOW);
   shouldStepMotor1 = true;
   shouldStepMotor2 = true;
-  digitalWrite(motor1Dir, LOW);
-  digitalWrite(motor2Dir, LOW);
+  digitalWrite(motor1Dir, shouldSwitchLeftMotorDir ? HIGH : LOW);
+  digitalWrite(motor2Dir, shouldSwitchRightMotorDir ? HIGH : LOW);
   stepMotors();
 }
 
 void stepRight() {
-//  digitalWrite(motor1Enable, LOW);
-//  digitalWrite(motor2Enable, LOW);
   shouldStepMotor1 = true;
   shouldStepMotor2 = true;
-  digitalWrite(motor1Dir, HIGH);
-  digitalWrite(motor2Dir, HIGH);
-  stepMotors();
-}
-
-void stepUp() {
-//  digitalWrite(motor1Enable, LOW);
-//  digitalWrite(motor2Enable, LOW);
-  shouldStepMotor1 = true;
-  shouldStepMotor2 = true;
-  digitalWrite(motor1Dir, LOW);
-  digitalWrite(motor2Dir, HIGH);
+  digitalWrite(motor1Dir, shouldSwitchLeftMotorDir ? LOW : HIGH);
+  digitalWrite(motor2Dir, shouldSwitchRightMotorDir ? LOW : HIGH);
   stepMotors();
 }
 
 void stepDown() {
-//  digitalWrite(motor1Enable, LOW);
-//  digitalWrite(motor2Enable, LOW);
   shouldStepMotor1 = true;
   shouldStepMotor2 = true;
-  digitalWrite(motor1Dir, HIGH);
-  digitalWrite(motor2Dir, LOW);
+  digitalWrite(motor1Dir, shouldSwitchLeftMotorDir ? HIGH : LOW);
+  digitalWrite(motor2Dir, shouldSwitchRightMotorDir ? LOW : HIGH);
   stepMotors();
 }
+
+void stepUp() {
+  shouldStepMotor1 = true;
+  shouldStepMotor2 = true;
+  digitalWrite(motor1Dir, shouldSwitchLeftMotorDir ? LOW : HIGH);
+  digitalWrite(motor2Dir, shouldSwitchRightMotorDir ? HIGH : LOW);
+  stepMotors();
+}
+
+ void debugPrint(char* str) {
+   #ifdef WEB_DEBUG
+     WebSerial.print(str);
+   #endif
+ }
+
+ void debugPrintln(char* str) {
+   #ifdef WEB_DEBUG
+     WebSerial.println(str);
+   #endif
+ }
+
+ void debugPrint(int str) {
+   #ifdef WEB_DEBUG
+     WebSerial.print(str);
+   #endif
+ }
+
+ void debugPrintln(int str) {
+   #ifdef WEB_DEBUG
+     WebSerial.println(str);
+   #endif
+ }
+
+ void debugPrint(String str) {
+   #ifdef WEB_DEBUG
+     WebSerial.print(str);
+   #endif
+ }
+
+ void debugPrintln(String str) {
+   #ifdef WEB_DEBUG
+     WebSerial.println(str);
+   #endif
+ }
+ 
