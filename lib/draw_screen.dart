@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paint_bot/brush_handler.dart';
 import 'bresenham_algo.dart';
 import 'upload_handler.dart';
 import 'app_utils.dart';
@@ -262,9 +263,11 @@ class DrawState extends State<DrawerScreen> {
       return;
     }
     final List<DrawingPoint> scaledPoints = getScaledPoints(points, width, height);
-    final List<DrawingPoint> bresenhamPoints = globalBresenham(scaledPoints);
+    final List<DrawingPoint> pointsWithColors = getPointsWithColors(scaledPoints);
+    final List<DrawingPoint> bresenhamPoints = globalBresenham(pointsWithColors);
     final List<RobotMove> robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     final List<CompMove> compressedMoves = compressMoves(robotMoves);
     await startUploading(compressedMoves);
   }
+
 }

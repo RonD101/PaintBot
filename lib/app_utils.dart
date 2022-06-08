@@ -10,18 +10,24 @@ enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
 enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType { regular, dummyUp, dummyDown }
 
+const double cupSize = 6;
+const double colorXBase = 0;
+const double colorYBase = 0;
 const Offset dummyOffset = Offset(-1, -1);
-const Offset redOffset = Offset(50, 200);
-const Offset waterOffset = Offset(50, 200);
+const Offset waterOffset = Offset(0 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
+const Offset redOffset = Offset(1 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
+const Offset greenOffset = Offset(2 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
+const Offset blueOffset =  Offset(3 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
 const double a4Width = 3712.5;
 const double a4Height = 2625;
 const double mmToStep = 12.5; // motor steps per mm
-const double distInCup = 50.0;
+const double distInCup = cupSize / 3;
 const int pulseCapacity = 500;
 const double xOffset = 0;
 const double yOffset = 0;
 final DrawingPoint upPoint = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
 final DrawingPoint downPoint = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
+final DrawingPoint startPoint = DrawingPoint(location: const Offset(0 ,a4Height), type: PointType.regular, paint: Paint());
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef = FirebaseDatabase.instance.ref("RobotMoves");

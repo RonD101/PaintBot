@@ -1,6 +1,33 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
+
+// points - DD rrr DU DD bbb DU
+// scaled - DD rrr DU DD bbb DU
+// color  - s0 DU DD w0w1w2 DU DD r0r1r2 DU DD rrr DU DD w0w1w2 DU DD b0b1b2 DU DD bbb DU DD w0w1w2
+
+List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
+  List<DrawingPoint> pointsWithColor = [];
+  pointsWithColor.add(startPoint);
+  Color curColor = scaledPoints[1].paint.color;
+  addColor(pointsWithColor, curColor);
+  for (int i = 1; i < scaledPoints.length - 1; i++) {
+    final DrawingPoint cur = scaledPoints[i];
+    final DrawingPoint next = scaledPoints[i + 1];
+    if (cur.type == PointType.dummyUp && next.type == PointType.dummyDown) {
+      if (curColor != scaledPoints[i + 2].paint.color) {
+        curColor = scaledPoints[i + 2].paint.color;
+        addColor(pointsWithColor, curColor);
+      }
+      i++;
+    } else {
+      pointsWithColor.add(cur);
+    }
+  }
+  cleanBrush(pointsWithColor);
+  return pointsWithColor;
+}
 
 List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double height) {
   height -= kBottomNavigationBarHeight;
@@ -19,20 +46,18 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
     final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + cur.location.dy * fScale);
-    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: Paint()));
+    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint));
   }
   return scaledPoints;
 }
 
-List<DrawingPoint> globalBresenham(List<DrawingPoint> scaledPoints) {
-  final Offset startingPoint = scaledPoints[2].location;
+// color     - s0 DU DD w0w1w2 DU DD r0r1r2 DU DD rrr DU DD w0w1w2 DU DD b0b1b2 DU DD bbb DU DD w0w1w2
+// bresenham - DU b(s0, w0) DD b(w0, w1) b(w1, w2) DU b(w2, r0) DD b(r0, r1) b(r1, r2) DU b(r2, r) DD b(r, r) b(r, r) DU b(r, w0) DD b(w0, w1) b(w1, w2) DU b(w2, b0) DD b(b0, b1) b(b1, b2) DU b(b2, b) DD b(b, b) b(b, b) DU b(b, w0) DD b(w0, w1) b(w1, w2)
+List<DrawingPoint> globalBresenham(List<DrawingPoint> pointsWithColors) {
   List<DrawingPoint> bresenhamPoints = [];
-  bresenhamPoints.add(upPoint);
-  bresenhamPoints += localBresenham(0, a4Height.round(), startingPoint.dx.round(), startingPoint.dy.round());
-  bresenhamPoints.add(downPoint);
-  for (int i = 2; i < scaledPoints.length - 1; i++) {
-    final DrawingPoint cur = scaledPoints[i];
-    final DrawingPoint next = scaledPoints[i + 1];
+  for (int i = 0; i < pointsWithColors.length - 1; i++) {
+    final DrawingPoint cur = pointsWithColors[i];
+    final DrawingPoint next = pointsWithColors[i + 1];
     final Offset curLoc = cur.location;
     final Offset nextLoc = next.location;
     if (cur.type == PointType.regular && next.type == PointType.regular) {
@@ -42,10 +67,9 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> scaledPoints) {
     } else if (cur.type == PointType.dummyUp) {
       bresenhamPoints.add(upPoint);
     } else if (cur.type == PointType.dummyDown) {
-      final Offset prevLoc = scaledPoints[i - 2].location;
+      final Offset prevLoc = pointsWithColors[i - 2].location;
       bresenhamPoints += localBresenham(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
       bresenhamPoints.add(downPoint);
-      continue;
     }
   }
   return bresenhamPoints;
@@ -77,6 +101,8 @@ List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1) {
   return bresenhamPoints;
 }
 
+// bresenham - DU b(s0, w0) DD b(w0, w1) b(w1, w2) DU b(w2, r0) DD b(r0, r1) b(r1, r2) DU b(r2, r) DD b(r, r) b(r, r) DU b(r, w0) DD b(w0, w1) b(w1, w2) DU b(w2, b0) DD b(b0, b1) b(b1, b2) DU b(b2, b) DD b(b, b) b(b, b) DU b(b, w0) DD b(w0, w1) b(w1, w2)
+// robot     - SU mmmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU GH
 List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
   List<RobotMove> robotMoves = [];
   for (int i = 0; i < bresenhamPoints.length - 1; i++) {

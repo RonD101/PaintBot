@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:paint_bot/app_utils.dart';
 import 'package:paint_bot/upload_handler.dart';
 import 'package:paint_bot/bresenham_algo.dart';
@@ -18,7 +18,7 @@ void rightUpAllWayTest() async {
 
 void squareTest() async {
   List<DrawingPoint> points = [];
-  addRedBrush(points);
+  addColor(points, Colors.red);
   points.add(downPoint);
   points.add(DrawingPoint(location: const Offset(100, 10), type: PointType.regular, paint: Paint()));
   points.add(DrawingPoint(location: const Offset(100, 100), type: PointType.regular, paint: Paint()));
