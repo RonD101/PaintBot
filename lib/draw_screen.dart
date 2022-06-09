@@ -263,8 +263,8 @@ class DrawState extends State<DrawerScreen> {
     }
     final List<DrawingPoint> scaledPoints = getScaledPoints(points, width, height);
     final List<DrawingPoint> pointsWithColors = getPointsWithColors(scaledPoints);
-    final List<DrawingPoint> pointsWithManhatten = getSmoothLogisticPoints(pointsWithColors);
-    final List<DrawingPoint> bresenhamPoints = globalBresenham(pointsWithManhatten);
+    final List<DrawingPoint> smoothPoints = getSmoothLogisticPoints(pointsWithColors);
+    final List<DrawingPoint> bresenhamPoints = globalBresenham(smoothPoints);
     final List<RobotMove> robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
     final List<CompMove> compressedMoves = compressMoves(robotMoves);
     await startUploading(compressedMoves);
