@@ -10,12 +10,15 @@ enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
 enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType { regular, dummyUp, dummyDown }
 
-const double cupSize = 6;
+const double cupSize = 300;
 const double colorXBase = 0;
 const double colorYBase = 0;
 const Offset dummyOffset = Offset(-1, -1);
-const Offset waterOffset = Offset(0 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
-const Offset redOffset = Offset(1 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
+// const Offset waterOffset = Offset(0 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
+// const Offset redOffset = Offset(1 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
+const Offset redOffset = Offset(200, a4Height);
+const Offset waterOffset = Offset(2200, a4Height);
+
 const Offset greenOffset = Offset(2 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
 const Offset blueOffset =  Offset(3 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
 const double a4Width = 3712.5;

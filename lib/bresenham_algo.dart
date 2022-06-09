@@ -51,13 +51,32 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
   return scaledPoints;
 }
 
-// color     - s0 DU DD w0w1w2 DU DD r0r1r2 DU DD rrr DU DD w0w1w2 DU DD b0b1b2 DU DD bbb DU DD w0w1w2
-// bresenham - DU b(s0, w0) DD b(w0, w1) b(w1, w2) DU b(w2, r0) DD b(r0, r1) b(r1, r2) DU b(r2, r) DD b(r, r) b(r, r) DU b(r, w0) DD b(w0, w1) b(w1, w2) DU b(w2, b0) DD b(b0, b1) b(b1, b2) DU b(b2, b) DD b(b, b) b(b, b) DU b(b, w0) DD b(w0, w1) b(w1, w2)
-List<DrawingPoint> globalBresenham(List<DrawingPoint> pointsWithColors) {
-  List<DrawingPoint> bresenhamPoints = [];
+// color - s0 DU DD (s0x, w0y)w0w1w2 DU DD (w2x, r0y)r0r1r2 DU DD (r2x, ry)rrr DU DD (rx, w0y)w0w1w2 DU DD (w2x, b0y)b0b1b2 DU DD (b2x, by)bbb DU DD (by, w0y)w0w1w2
+List<DrawingPoint> getSmoothLogisticPoints(List<DrawingPoint> pointsWithColors) {
+  List<DrawingPoint> smoothLogistic = [];
   for (int i = 0; i < pointsWithColors.length - 1; i++) {
     final DrawingPoint cur = pointsWithColors[i];
     final DrawingPoint next = pointsWithColors[i + 1];
+    if (cur.type == PointType.dummyUp && next.type == PointType.dummyDown) {
+      smoothLogistic.add(upPoint);
+      smoothLogistic.add(downPoint);
+      final double prevX = pointsWithColors[i - 1].location.dx;
+      final double nextY = pointsWithColors[i + 2].location.dy;
+      smoothLogistic.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint()));
+      i++;
+    } else {
+      smoothLogistic.add(cur);
+    }
+  }
+  return smoothLogistic;
+}
+
+// bresenham - DU b(s0, w0) DD b(w0, w1) b(w1, w2) DU b(w2, r0) DD b(r0, r1) b(r1, r2) DU b(r2, r) DD b(r, r) b(r, r) DU b(r, w0) DD b(w0, w1) b(w1, w2) DU b(w2, b0) DD b(b0, b1) b(b1, b2) DU b(b2, b) DD b(b, b) b(b, b) DU b(b, w0) DD b(w0, w1) b(w1, w2)
+List<DrawingPoint> globalBresenham(List<DrawingPoint> pointsWithManhatten) {
+  List<DrawingPoint> bresenhamPoints = [];
+  for (int i = 0; i < pointsWithManhatten.length - 1; i++) {
+    final DrawingPoint cur = pointsWithManhatten[i];
+    final DrawingPoint next = pointsWithManhatten[i + 1];
     final Offset curLoc = cur.location;
     final Offset nextLoc = next.location;
     if (cur.type == PointType.regular && next.type == PointType.regular) {
@@ -67,7 +86,7 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> pointsWithColors) {
     } else if (cur.type == PointType.dummyUp) {
       bresenhamPoints.add(upPoint);
     } else if (cur.type == PointType.dummyDown) {
-      final Offset prevLoc = pointsWithColors[i - 2].location;
+      final Offset prevLoc = pointsWithManhatten[i - 2].location;
       bresenhamPoints += localBresenham(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
       bresenhamPoints.add(downPoint);
     }
