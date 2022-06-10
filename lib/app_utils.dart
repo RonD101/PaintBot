@@ -12,12 +12,12 @@ enum PointType { regular, dummyUp, dummyDown }
 
 const double cupSize = 300;
 const double colorXBase = 0;
-const double colorYBase = 0;
+const double colorYBase = -10;
 const Offset dummyOffset = Offset(-1, -1);
 // const Offset waterOffset = Offset(0 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
 // const Offset redOffset = Offset(1 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
-const Offset redOffset = Offset(200, a4Height);
-const Offset waterOffset = Offset(2200, a4Height);
+const Offset redOffset = Offset(200, a4Height + colorYBase);
+const Offset waterOffset = Offset(2200, a4Height + colorYBase);
 
 const Offset greenOffset = Offset(2 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
 const Offset blueOffset =  Offset(3 * cupSize + cupSize / 2 + colorXBase, a4Height + colorYBase);
@@ -40,6 +40,9 @@ class CompMove {
   final RobotMove move;
   int num;
   CompMove({required this.num, required this.move});
+  void printComp() {
+    debugPrint(num.toString() + " " + move.name);
+  }
 }
 
 class DrawingPoint {

@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
-// points - DD rrr DU DD bbb DU
-// scaled - DD rrr DU DD bbb DU
-// color  - s0 DU DD w0w1w2 DU DD r0r1r2 DU DD rrr DU DD w0w1w2 DU DD b0b1b2 DU DD bbb DU DD w0w1w2
-
+// color - s0 DU DD w0w1w2 DU DD r0r1r2 DU DD rrr DU DD w0w1w2 DU DD b0b1b2 DU DD bbb DU DD w0w1w2
 List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
   List<DrawingPoint> pointsWithColor = [];
   pointsWithColor.add(startPoint);
@@ -29,6 +26,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
   return pointsWithColor;
 }
 
+// scaled - DD rrr DU DD bbb DU
 List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double height) {
   height -= kBottomNavigationBarHeight;
   final double xScale = a4Width / width;
@@ -51,44 +49,65 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
   return scaledPoints;
 }
 
-// color - s0 DU DD (s0x, w0y)w0w1w2 DU DD (w2x, r0y)r0r1r2 DU DD (r2x, ry)rrr DU DD (rx, w0y)w0w1w2 DU DD (w2x, b0y)b0b1b2 DU DD (b2x, by)bbb DU DD (by, w0y)w0w1w2
-List<DrawingPoint> getSmoothLogisticPoints(List<DrawingPoint> pointsWithColors) {
-  List<DrawingPoint> smoothLogistic = [];
+// smooth - s0
+//          DU DD (s0x, w0y)w0w1w2
+//          DU DD (w2x, r0y)r0r1r2
+//          DU DD (r2x, ry)rrr
+//          DU DD (rx, w0y)w0w1w2
+//          DU DD (w2x, b0y)b0b1b2
+//          DU DD (b2x, by)bbb
+//          DU DD (bx, w0y)w0w1w2
+List<DrawingPoint> getSmoothPoints(List<DrawingPoint> pointsWithColors) {
+  List<DrawingPoint> smoothPoints = [];
   for (int i = 0; i < pointsWithColors.length - 1; i++) {
     final DrawingPoint cur = pointsWithColors[i];
     final DrawingPoint next = pointsWithColors[i + 1];
     if (cur.type == PointType.dummyUp && next.type == PointType.dummyDown) {
-      smoothLogistic.add(upPoint);
-      smoothLogistic.add(downPoint);
+      smoothPoints.add(upPoint);
+      smoothPoints.add(downPoint);
       final double prevX = pointsWithColors[i - 1].location.dx;
       final double nextY = pointsWithColors[i + 2].location.dy;
-      smoothLogistic.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint()));
+      smoothPoints.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint()));
       i++;
     } else {
-      smoothLogistic.add(cur);
+      smoothPoints.add(cur);
     }
   }
-  return smoothLogistic;
+  return smoothPoints;
 }
 
-// bresenham - DU b(s0, w0) DD b(w0, w1) b(w1, w2) DU b(w2, r0) DD b(r0, r1) b(r1, r2) DU b(r2, r) DD b(r, r) b(r, r) DU b(r, w0) DD b(w0, w1) b(w1, w2) DU b(w2, b0) DD b(b0, b1) b(b1, b2) DU b(b2, b) DD b(b, b) b(b, b) DU b(b, w0) DD b(w0, w1) b(w1, w2)
+// bresenham - DU
+//             B(s0, (s0x, w0y)) B((s0x, w0y), w0) DD B(w0, w1) B(w1, w2) DU
+//             B(w2, (w2x, r0y)) B((w2x, r0y), r0) DD B(r0, r1) B(r1, r2) DU
+//             B(r2, (r2x, ry))  B((r2x, ry) , r)  DD B(r , r)  B(r , r)  DU
+//             B(r , (rx , w0y)) B((rx , w0y), w0) DD B(w0, w1) B(w1, w2) DU
+//             B(w2, (w2x, b0y)) B((w2x, b0y), b0) DD B(b0, b1) B(b1, b2) DU
+//             B(b2, (b2x, by))  B((b2x, by) , b)  DD B(b , b)  B(b , b)  DU
+//             B(b , (bx , w0y)) B((bx , w0y), w0) DD B(w0, w1) B(w1, w2)
 List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
   List<DrawingPoint> bresenhamPoints = [];
   for (int i = 0; i < smoothPoints.length - 1; i++) {
-    final DrawingPoint cur = smoothPoints[i];
-    final DrawingPoint next = smoothPoints[i + 1];
-    final Offset curLoc = cur.location;
-    final Offset nextLoc = next.location;
-    if (cur.type == PointType.regular && next.type == PointType.regular) {
-      bresenhamPoints += localBresenham(curLoc.dx.round(), curLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
-    } else if (cur.type == PointType.regular && next.type != PointType.regular) {
+    final PointType curType = smoothPoints[i].type;
+    final PointType nextType = smoothPoints[i + 1].type;
+    final int curX = smoothPoints[i].location.dx.round();
+    final int curY = smoothPoints[i].location.dy.round();
+    final int nextX = smoothPoints[i + 1].location.dx.round();
+    final int nextY = smoothPoints[i + 1].location.dy.round();
+    if (curType == PointType.regular && nextType == PointType.regular) {
+      bresenhamPoints += localBresenham(curX, curY, nextX, nextY);
+    } else if (curType == PointType.regular && nextType != PointType.regular) {
       continue;
-    } else if (cur.type == PointType.dummyUp) {
+    } else if (curType == PointType.dummyUp) {
       bresenhamPoints.add(upPoint);
-    } else if (cur.type == PointType.dummyDown) {
-      final Offset prevLoc = smoothPoints[i - 2].location;
-      bresenhamPoints += localBresenham(prevLoc.dx.round(), prevLoc.dy.round(), nextLoc.dx.round(), nextLoc.dy.round());
+    } else if (curType == PointType.dummyDown) {
+      final int beforeUpX = smoothPoints[i - 2].location.dx.round();
+      final int beforeUpY = smoothPoints[i - 2].location.dy.round();
+      final int afterLogisticX = smoothPoints[i + 2].location.dx.round();
+      final int afterLogisticY = smoothPoints[i + 2].location.dy.round();
+      bresenhamPoints += localBresenham(beforeUpX, beforeUpY, nextX, nextY);
+      bresenhamPoints += localBresenham(nextX, nextY, afterLogisticX, afterLogisticY);
       bresenhamPoints.add(downPoint);
+      i++;
     }
   }
   return bresenhamPoints;
@@ -120,8 +139,7 @@ List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1) {
   return bresenhamPoints;
 }
 
-// bresenham - DU b(s0, w0) DD b(w0, w1) b(w1, w2) DU b(w2, r0) DD b(r0, r1) b(r1, r2) DU b(r2, r) DD b(r, r) b(r, r) DU b(r, w0) DD b(w0, w1) b(w1, w2) DU b(w2, b0) DD b(b0, b1) b(b1, b2) DU b(b2, b) DD b(b, b) b(b, b) DU b(b, w0) DD b(w0, w1) b(w1, w2)
-// robot     - SU mmmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmm SU mmmmmmmm SD mmmmmmmmmmmmmmmmmmm SU GH
+// robot - SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU GH
 List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
   List<RobotMove> robotMoves = [];
   for (int i = 0; i < bresenhamPoints.length - 1; i++) {
@@ -167,14 +185,14 @@ List<RobotMove> getRobotMovesFromBresenham(List<DrawingPoint> bresenhamPoints) {
   return robotMoves;
 }
 
-List<CompMove> compressMoves(List<RobotMove> robotMoves) {
-  List<CompMove> out = [];
+List<CompMove> getCompressedMoves(List<RobotMove> robotMoves) {
+  List<CompMove> compressedMoves = [];
   for (RobotMove m in robotMoves) {
-    if (out.isNotEmpty && m == out.last.move) {
-      out.last.num++;
+    if (compressedMoves.isNotEmpty && m == compressedMoves.last.move) {
+      compressedMoves.last.num++;
     } else {
-      out.add(CompMove(num: 1, move: m));
+      compressedMoves.add(CompMove(num: 1, move: m));
     }
   }
-  return out;
+  return compressedMoves;
 }

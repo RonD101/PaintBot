@@ -40,6 +40,6 @@ Future<void> uploadTest(List<DrawingPoint> points) async {
   final List<DrawingPoint> bresenhamPoints = globalBresenham(scaledPoints);
   final List<RobotMove> robotMoves = getRobotMovesFromBresenham(bresenhamPoints);
   robotMoves.add(RobotMove.goHome);
-  final List<CompMove> compressedMoves = compressMoves(robotMoves);
+  final List<CompMove> compressedMoves = getCompressedMoves(robotMoves);
   await startUploading(compressedMoves);
 }
