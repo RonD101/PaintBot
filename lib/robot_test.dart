@@ -4,17 +4,18 @@ import 'package:paint_bot/upload_handler.dart';
 import 'package:paint_bot/bresenham_algo.dart';
 import 'brush_handler.dart';
 
-const double width = 683.428;
-const double height = 411.43;
+const double width = 683.42857;
+const double height = 411.428;
 
 void rightUpAllWayTest() async {
-  List<DrawingPoint> points = [];
-
-  points.add(downPoint);
-  points.add(DrawingPoint(location: const Offset(0, 388.42857), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: const Offset(644.42857, 388.42857), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: const Offset(644.42857, 0), type: PointType.regular, paint: Paint()));
-  await uploadTest(points);
+  List<CompMove> compressedMoves = [];
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.goHome));
+  /*compressedMoves.add(CompMove(num: maxRobotWidth.toInt(), move: RobotMove.right));
+  compressedMoves.add(CompMove(num: maxRobotHight.toInt(), move: RobotMove.up));
+  compressedMoves.add(CompMove(num: maxRobotWidth.toInt(), move: RobotMove.left));
+  compressedMoves.add(CompMove(num: maxRobotHight.toInt(), move: RobotMove.down));*/
+  await startUploading(compressedMoves);
 }
 
 void squareTest() async {

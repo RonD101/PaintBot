@@ -6,22 +6,29 @@ import 'app_utils.dart';
 // scaled - DD rrr DU DD bbb DU
 List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight) {
   hight -= kBottomNavigationBarHeight; // remove menu height
-  final double xScale = a4Width / width;
-  final double yScale = a4Hight / hight;
+  final double xScale = paperWidth / width;
+  final double yScale = paperHight / hight;
   final double fScale = min(xScale, yScale);
   final double xBase;
   final double yBase;
   if (fScale == xScale) {
-    xBase = 0;
-    yBase = ((a4Hight - hight * fScale) / 2) + xOffset;
+    xBase = xOffset;
+    yBase = ((paperHight - hight * fScale) / 2) + yOffset;
   } else {
-    xBase = ((a4Width - width * fScale) / 2) + yOffset;
-    yBase = 0;
+    xBase = ((paperWidth - width * fScale) / 2) + xOffset;
+    yBase = yOffset;
   }
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
     final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + cur.location.dy * fScale);
     scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint));
+  }
+  for (var p in points) {
+    p.printPoint();
+  }
+  debugPrint("scaled*********");
+   for (var p in scaledPoints) {
+    p.printPoint();
   }
   return scaledPoints;
 }

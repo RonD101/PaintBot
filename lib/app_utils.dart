@@ -1,8 +1,9 @@
+import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
-// 8cm/1000 = 8 * 10^-5 meters/tick left/right/up/down.
+// 10cm/1000 = 10 * 10^-5 meters/tick left/right/up/down.
 enum RobotMove     { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown, goHome }
 enum UploadFlag    { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
 enum PulseStatus   { nextPulse, reuploadPulse, finishedPulses }
@@ -11,26 +12,37 @@ enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
 const int pulseCapacity  = 500;
-const double opacity     = 1.0;
-const double cupSize     = 300;
-const double colorXBase  = 10;
-const double colorYBase  = -10;
-const double a4Width     = 3712.5;
-const double a4Hight     = 2625;
-const double mmToStep    = 12.5;
-const double distInCup   = cupSize / 3;
-const double xOffset     = 0;
-const double yOffset     = 0;
+const double maxRobotWidth = 25 * ticksPerCM;
+const double maxRobotHight = 19 * ticksPerCM;
+
+const double opacity    = 1.0;
+const double ticksPerCM = 100;
+const double spaceBetweenCups = 0.5 * ticksPerCM;
+const double spaceBetweenLastCupAndWater = 1 * ticksPerCM;
+
+const double cupSize      = 3 * ticksPerCM;
+const double waterCupSize = 3.8 * ticksPerCM;
+const double xColorOffset = cupSize / 2;
+const double distInCup    = cupSize / 3;
+const double paperWidthInCM = 29.7;
+const double paperHightInCM = 21;
+const double paperWidthInRobotMoves = paperWidthInCM * ticksPerCM;
+const double paperHightInRobotMoves = paperHightInCM * ticksPerCM;
+const double palleteHight = 7 * ticksPerCM;
+final double paperWidth = min(paperWidthInRobotMoves, maxRobotWidth);
+final double paperHight = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
+const double xOffset    = 0;
+const double yOffset    = 0;
 
 const Offset dummyOffset = Offset(-1, -1);
-const Offset waterOffset = Offset(0 * cupSize + cupSize / 2 + colorXBase, a4Hight + colorYBase);
-const Offset redOffset   = Offset(1 * cupSize + cupSize / 2 + colorXBase, a4Hight + colorYBase);
-const Offset greenOffset = Offset(2 * cupSize + cupSize / 2 + colorXBase, a4Hight + colorYBase);
-const Offset blueOffset  = Offset(3 * cupSize + cupSize / 2 + colorXBase, a4Hight + colorYBase);
+final Offset waterOffset = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
+final Offset redOffset   = Offset(2   * cupSize + 2 * spaceBetweenCups + xColorOffset, maxRobotHight);
+final Offset greenOffset = Offset(2   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHight);
+final Offset blueOffset  = Offset(3   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHight);
 
 final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
 final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
-final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, a4Hight), type: PointType.regular, paint: Paint());
+final DrawingPoint startPoint = DrawingPoint(location: Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");
