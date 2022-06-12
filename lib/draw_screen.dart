@@ -7,7 +7,8 @@ import 'robot_test.dart';
 class DrawerScreen extends StatefulWidget {
   final double width;
   final double height;
-  const DrawerScreen({Key? key, required this.width, required this.height}) : super(key: key);
+  final double statusBar;
+  const DrawerScreen({Key? key, required this.width, required this.height, required this.statusBar}) : super(key: key);
   @override
   DrawState createState() => DrawState();
 }
@@ -18,7 +19,7 @@ class DrawState extends State<DrawerScreen> {
   Color selectedColor        = Colors.red;
   double strokeWidth         = 3.0;
   bool displayMenu           = false;
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -273,7 +274,7 @@ class DrawState extends State<DrawerScreen> {
       restartHandler();
       return;
     }
-    final List<DrawingPoint> scaledPoints     = getScaledPoints(points, width, height);
+    final List<DrawingPoint> scaledPoints     = getScaledPoints(points, widget.width, widget.height, widget.statusBar);
     final List<DrawingPoint> pointsWithColors = getPointsWithColors(scaledPoints);
     final List<DrawingPoint> smoothPoints     = getSmoothPoints(pointsWithColors);
     final List<DrawingPoint> bresenhamPoints  = globalBresenham(smoothPoints);

@@ -19,11 +19,12 @@ const double opacity    = 1.0;
 const double ticksPerCM = 100;
 const double spaceBetweenCups = 0.5 * ticksPerCM;
 const double spaceBetweenLastCupAndWater = 1 * ticksPerCM;
-
+const double spaceToCleaner = 0.65 * ticksPerCM;
 const double cupSize      = 3 * ticksPerCM;
 const double waterCupSize = 3.8 * ticksPerCM;
 const double xColorOffset = cupSize / 2;
 const double distInCup    = cupSize / 3;
+const double distOfCleaner = 14 * ticksPerCM;
 const double paperWidthInCM = 29.7;
 const double paperHightInCM = 21;
 const double paperWidthInRobotMoves = paperWidthInCM * ticksPerCM;
@@ -33,19 +34,21 @@ final double paperWidth = min(paperWidthInRobotMoves, maxRobotWidth);
 final double paperHight = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
 const double xOffset    = 0;
 const double yOffset    = 0;
-const double marginFactor = 0.97;
+const double marginFactor = 1.0;
 final double xMargin = (paperWidth * (1-marginFactor)) / 2;
 final double yMargin = (paperHight * (1-marginFactor)) / 2;
 
 const Offset dummyOffset = Offset(-1, -1);
-final Offset waterOffset = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
-final Offset redOffset   = Offset(2   * cupSize + 2 * spaceBetweenCups + xColorOffset, maxRobotHight);
-final Offset greenOffset = Offset(2   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHight);
-final Offset blueOffset  = Offset(3   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHight);
+const Offset waterOffset = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
+const Offset cleanerOffset = Offset(5 * cupSize + 5 * spaceBetweenCups, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner);
+final Offset redOffset   = getColorOffset(0, 1);
+final Offset greenOffset = getColorOffset(0, 2);
+final Offset blueOffset  = getColorOffset(0, 3);
+
 
 final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
 final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
-final DrawingPoint startPoint = DrawingPoint(location: Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());
+final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");
@@ -102,4 +105,10 @@ class BotIcons {
   static const IconData color    = Icons.color_lens_outlined;
   static const IconData settings = Icons.settings_outlined;
   static const IconData test     = Icons.checklist_outlined;
+}
+
+Offset getColorOffset(int row, int col) {
+  final double xOffset = cupSize * col + cupSize / 2 + spaceBetweenCups * col;
+  final double yOffset = maxRobotHight - ((cupSize - spaceBetweenCups) * row);
+  return Offset(xOffset, yOffset);
 }

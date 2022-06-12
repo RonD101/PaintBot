@@ -4,8 +4,8 @@ import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
 // scaled - DD rrr DU DD bbb DU
-List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight) {
-  hight -= kBottomNavigationBarHeight; // remove menu height
+List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight, double statusBar) {
+  hight -= (kBottomNavigationBarHeight + statusBar); // remove menu height
   final double xScale = paperWidth / width;
   final double yScale = paperHight / hight;
   final double fScale = min(xScale, yScale) * marginFactor;
@@ -20,15 +20,8 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
   }
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
-    final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + cur.location.dy * fScale);
+    final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + (cur.location.dy - statusBar) * fScale);
     scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint));
-  }
-  for (var p in points) {
-    p.printPoint();
-  }
-  debugPrint("scaled*********");
-   for (var p in scaledPoints) {
-    p.printPoint();
   }
   return scaledPoints;
 }
@@ -52,7 +45,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       pointsWithColor.add(cur);
     }
   }
-  cleanBrush(pointsWithColor); // every draw ends with water.
+  addWater(pointsWithColor); // every draw ends with water.
   return pointsWithColor;
 }
 

@@ -4,9 +4,6 @@ import 'package:paint_bot/upload_handler.dart';
 import 'package:paint_bot/bresenham_algo.dart';
 import 'brush_handler.dart';
 
-const double width = 683.42857;
-const double height = 411.428;
-
 void rightUpAllWayTest() async {
   List<CompMove> compressedMoves = [];
   compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
@@ -38,7 +35,7 @@ void goHomeTest() async {
 }
 
 Future<void> uploadTest(List<DrawingPoint> points) async {
-  final List<DrawingPoint> scaledPoints = getScaledPoints(points, width, height);
+  final List<DrawingPoint> scaledPoints = getScaledPoints(points, 100, 100, 27);
   final List<DrawingPoint> bresenhamPoints = globalBresenham(scaledPoints);
   final List<RobotMove> robotMoves = getRobotMoves(bresenhamPoints);
   robotMoves.add(RobotMove.goHome);
