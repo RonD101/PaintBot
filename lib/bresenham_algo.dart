@@ -4,19 +4,19 @@ import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
 // scaled - DD rrr DU DD bbb DU
-List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight) {
-  hight -= kBottomNavigationBarHeight; // remove menu height
+List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double height) {
+  height -= kBottomNavigationBarHeight; // remove menu height
   final double xScale = paperWidth / width;
-  final double yScale = paperHight / hight;
-  final double fScale = min(xScale, yScale);
+  final double yScale = paperHeight / height;
+  final double fScale = min(xScale, yScale) * marginFactor;
   final double xBase;
   final double yBase;
   if (fScale == xScale) {
-    xBase = xOffset;
-    yBase = ((paperHight - hight * fScale) / 2) + yOffset;
+    xBase = xOffset + xMargin;
+    yBase = ((paperHeight - height * fScale) / 2) + yOffset + yMargin;
   } else {
-    xBase = ((paperWidth - width * fScale) / 2) + xOffset;
-    yBase = yOffset;
+    xBase = ((paperWidth - width * fScale) / 2) + xOffset + xMargin;
+    yBase = yOffset + yMargin;
   }
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
