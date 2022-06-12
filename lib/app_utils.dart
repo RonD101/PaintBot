@@ -13,7 +13,7 @@ enum PointType     { regular, dummyUp, dummyDown }
 
 const int pulseCapacity  = 500;
 const double maxRobotWidth = 25 * ticksPerCM;
-const double maxRobotHight = 19 * ticksPerCM;
+const double maxRobotHeight = 19 * ticksPerCM;
 
 const double opacity    = 1.0;
 const double ticksPerCM = 100;
@@ -25,24 +25,27 @@ const double waterCupSize = 3.8 * ticksPerCM;
 const double xColorOffset = cupSize / 2;
 const double distInCup    = cupSize / 3;
 const double paperWidthInCM = 29.7;
-const double paperHightInCM = 21;
+const double paperHeightInCM = 21;
 const double paperWidthInRobotMoves = paperWidthInCM * ticksPerCM;
-const double paperHightInRobotMoves = paperHightInCM * ticksPerCM;
-const double palleteHight = 7 * ticksPerCM;
+const double paperHeightInRobotMoves = paperHeightInCM * ticksPerCM;
+const double palleteHeight = 7 * ticksPerCM;
 final double paperWidth = min(paperWidthInRobotMoves, maxRobotWidth);
-final double paperHight = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
+final double paperHeight = min(paperHeightInRobotMoves, maxRobotHeight - palleteHeight);
 const double xOffset    = 0;
 const double yOffset    = 0;
+const double marginFactor = 0.97;
+final double xMargin = (paperWidth * (1-marginFactor)) / 2;
+final double yMargin = (paperHeight * (1-marginFactor)) / 2;
 
 const Offset dummyOffset = Offset(-1, -1);
-final Offset waterOffset = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
-final Offset redOffset   = Offset(2   * cupSize + 2 * spaceBetweenCups + xColorOffset, maxRobotHight);
-final Offset greenOffset = Offset(2   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHight);
-final Offset blueOffset  = Offset(3   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHight);
+final Offset waterOffset = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHeight);
+final Offset redOffset   = Offset(2   * cupSize + 2 * spaceBetweenCups + xColorOffset, maxRobotHeight);
+final Offset greenOffset = Offset(2   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHeight);
+final Offset blueOffset  = Offset(3   * cupSize + cupSize / 2 + spaceBetweenCups + xColorOffset, maxRobotHeight);
 
 final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
 final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
-final DrawingPoint startPoint = DrawingPoint(location: Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());
+final DrawingPoint startPoint = DrawingPoint(location: Offset(0, maxRobotHeight), type: PointType.regular, paint: Paint());
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");

@@ -12,9 +12,9 @@ void rightUpAllWayTest() async {
   compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
   compressedMoves.add(CompMove(num: 1, move: RobotMove.goHome));
   /*compressedMoves.add(CompMove(num: maxRobotWidth.toInt(), move: RobotMove.right));
-  compressedMoves.add(CompMove(num: maxRobotHight.toInt(), move: RobotMove.up));
+  compressedMoves.add(CompMove(num: maxRobotHeight.toInt(), move: RobotMove.up));
   compressedMoves.add(CompMove(num: maxRobotWidth.toInt(), move: RobotMove.left));
-  compressedMoves.add(CompMove(num: maxRobotHight.toInt(), move: RobotMove.down));*/
+  compressedMoves.add(CompMove(num: maxRobotHeight.toInt(), move: RobotMove.down));*/
   await startUploading(compressedMoves);
 }
 
