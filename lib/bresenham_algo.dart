@@ -42,6 +42,10 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         addColor(pointsWithColor, curColor);
         numOfCurColor = 0;
       }
+      else { 
+        pointsWithColor.add(cur);
+        pointsWithColor.add(nex);
+      }
       i++;
     } else {
       pointsWithColor.add(cur);
@@ -56,6 +60,9 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
   }
   addWater(pointsWithColor); // every draw ends with water.
   cleanBrush(pointsWithColor);
+  for (var p in pointsWithColor) {
+    p.printPoint();
+  }  
   return pointsWithColor;
 }
 
