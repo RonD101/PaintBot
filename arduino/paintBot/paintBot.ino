@@ -11,10 +11,10 @@
 
 
 // Insert your network credentials
-//#define WIFI_SSID "TechPublic"
-//#define WIFI_PASSWORD ""
-#define WIFI_SSID "RonDiPhone"
-#define WIFI_PASSWORD "12345678"
+#define WIFI_SSID "TechPublic"
+#define WIFI_PASSWORD ""
+//#define WIFI_SSID "RonDiPhone"
+//#define WIFI_PASSWORD "12345678"
 
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyAIVdnB_mJA6_ZV5G9ctjWO7aQRLJk_DjQ"
@@ -24,24 +24,26 @@
 //#define WEB_DEBUG
 #define SERIAL_DEBUG
 
-#define LEFT_MOTOR_ENABLE_PIN 2
-#define LEFT_MOTOR_STEP_PIN 4
-#define LEFT_MOTOR_DIR_PIN 0
+#define LEFT_MOTOR_ENABLE_PIN 35
+#define LEFT_MOTOR_STEP_PIN 25
+#define LEFT_MOTOR_DIR_PIN 26
 
-#define RIGHT_MOTOR_ENABLE_PIN 5
-#define RIGHT_MOTOR_STEP_PIN 19
-#define RIGHT_MOTOR_DIR_PIN 18
+#define RIGHT_MOTOR_ENABLE_PIN 32
+#define RIGHT_MOTOR_STEP_PIN 13
+#define RIGHT_MOTOR_DIR_PIN 12
 
 #define SERVO_PIN 33
 
 #define LEFT_SENSOR_PIN 14
 #define DOWN_SENSOR_PIN 27
 
+#define LED_PIN 2
+
 #ifdef WEB_DEBUG
   AsyncWebServer server(80);
 #endif
 
-Servo myservo;  // create servo object to control a servo
+Servo myservo;
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -84,6 +86,10 @@ void setup() {
   pinMode(LEFT_SENSOR_PIN, INPUT);
   pinMode(DOWN_SENSOR_PIN, INPUT);
 
+  pinMode(LED_PIN, OUTPUT);
+
+  digitalWrite(LED_PIN, LOW);
+
   digitalWrite(LEFT_MOTOR_ENABLE_PIN, LOW);
   digitalWrite(RIGHT_MOTOR_ENABLE_PIN, LOW);
   digitalWrite(LEFT_MOTOR_STEP_PIN, LOW);
@@ -93,20 +99,20 @@ void setup() {
   myservo.setPeriodHertz(50);// Standard 50hz servo
   myservo.attach(SERVO_PIN, 1000, 2000);
 
-  #ifdef SERIAL_DEBUG
-    Serial.begin(115200);
-  #endif
-  
+  Serial.begin(115200);
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  debugPrint("Connecting to Wi-Fi");
+  Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED){
-    debugPrint(".");
+    Serial.print(".");
     delay(300);
   }
-  debugPrintln("");
-  debugPrint("Connected with IP: ");
-  debugPrintln(WiFi.localIP());
+  Serial.println("");
+  Serial.print("Connected with IP: ");
+  Serial.println(WiFi.localIP());
+
+  digitalWrite(LED_PIN, HIGH);
 
   /* Assign the api key (required) */
   config.api_key = API_KEY;
@@ -116,11 +122,11 @@ void setup() {
 
   /* Sign up */
   if (Firebase.signUp(&config, &auth, "", "")){
-    debugPrintln("ok");
+    Serial.println("ok");
     signupOK = true;
   }
   else{
-    debugPrintln(config.signer.signupError.message.c_str());
+    Serial.println(config.signer.signupError.message.c_str());
   }
 
   /* Assign the callback function for the long running token generation task */
@@ -136,6 +142,11 @@ void setup() {
 }
 
 void loop() {
+  if (Firebase.ready() && signupOK)
+    digitalWrite(LED_PIN, HIGH);
+  else
+    digitalWrite(LED_PIN, LOW);
+    
   if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)) {
     sendDataPrevMillis = millis();
     if (Firebase.RTDB.getInt(&fbdo, "/Flag")) {
@@ -210,7 +221,7 @@ void loop() {
         }
       }
       debugPrintln("End Draw!");
-      delete[] movesArray;
+//      delete[] movesArray;
     }
     if (flag == 1) {
       if (Firebase.RTDB.getArray(&fbdo, "/RobotMoves")) {
@@ -305,13 +316,15 @@ void mainLoop() {
 
 void goHome() {
   debugPrintln("Start go home");
-  HomeLeftState = digitalRead(LEFT_SENSOR_PIN);
   HomeDownState = digitalRead(DOWN_SENSOR_PIN);
+  delay(10);
   while (HomeDownState == HIGH) {
     stepDown();
     HomeDownState = digitalRead(DOWN_SENSOR_PIN);
   }
   debugPrintln("Finish go down");
+  HomeLeftState = digitalRead(LEFT_SENSOR_PIN);
+  delay(10);
   while (HomeLeftState == HIGH) {
     stepLeft();
     HomeLeftState = digitalRead(LEFT_SENSOR_PIN);

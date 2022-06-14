@@ -119,6 +119,6 @@ class BotIcons {
 
 Offset getColorOffset(int row, int col) {
   final double xOffset = cupSize * col + cupSize / 2 + spaceBetweenCups * col;
-  final double yOffset = maxRobotHight - ((cupSize - spaceBetweenCups) * row);
+  final double yOffset = maxRobotHight - ((cupSize + spaceBetweenCups) * row);
   return Offset(xOffset, yOffset);
 }
