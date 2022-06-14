@@ -28,6 +28,7 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
 
 // color - s0 DU DD w0w1w2 DU DD r0r1r2 DU DD rrr DU DD w0w1w2 DU DD b0b1b2 DU DD bbb DU DD w0w1w2
 List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
+  int numOfCurColor = 0;
   List<DrawingPoint> pointsWithColor = [];
   pointsWithColor.add(startPoint);
   Color curColor = scaledPoints[1].paint.color; // first color
@@ -39,13 +40,22 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       if (curColor != scaledPoints[i + 2].paint.color) {
         curColor = scaledPoints[i + 2].paint.color;
         addColor(pointsWithColor, curColor);
+        numOfCurColor = 0;
       }
       i++;
     } else {
       pointsWithColor.add(cur);
+      if (cur.type == PointType.regular) {
+        numOfCurColor++;
+      }
+      if (numOfCurColor > numPointForRefill) {
+        numOfCurColor = 0;
+        addColor(pointsWithColor, curColor);
+      }
     }
   }
   addWater(pointsWithColor); // every draw ends with water.
+  cleanBrush(pointsWithColor);
   return pointsWithColor;
 }
 

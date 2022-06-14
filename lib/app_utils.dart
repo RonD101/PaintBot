@@ -11,41 +11,51 @@ enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
 enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
-const int pulseCapacity  = 500;
-const double maxRobotWidth = 25 * ticksPerCM;
-const double maxRobotHight = 19 * ticksPerCM;
+const double opacity       = 0.8;
+const int    pulseCapacity = 500;
+const int    numPointForRefill = 300;
 
-const double opacity    = 1.0;
 const double ticksPerCM = 100;
-const double spaceBetweenCups = 0.5 * ticksPerCM;
-const double spaceBetweenLastCupAndWater = 1 * ticksPerCM;
-const double spaceToCleaner = 0.65 * ticksPerCM;
-const double cupSize      = 3 * ticksPerCM;
-const double waterCupSize = 3.8 * ticksPerCM;
-const double xColorOffset = cupSize / 2;
-const double distInCup    = cupSize / 3;
-const double distOfCleaner = 14 * ticksPerCM;
+const double maxRobotWidth               = 25   * ticksPerCM;
+const double maxRobotHight               = 19   * ticksPerCM;
+const double spaceBetweenLastCupAndWater = 1    * ticksPerCM;
+const double spaceBetweenCups            = 0.5  * ticksPerCM;
+const double spaceToCleaner              = 0.65 * ticksPerCM;
+const double cupSize                     = 3    * ticksPerCM;
+const double waterCupSize                = 3.8  * ticksPerCM;
+const double distOfCleaner               = 14   * ticksPerCM;
+const double palleteHight                = 7    * ticksPerCM;
+
+const double xColorOffset   = cupSize / 2;
+const double distInCup      = cupSize / 3;
 const double paperWidthInCM = 29.7;
 const double paperHightInCM = 21;
 const double paperWidthInRobotMoves = paperWidthInCM * ticksPerCM;
 const double paperHightInRobotMoves = paperHightInCM * ticksPerCM;
-const double palleteHight = 7 * ticksPerCM;
 final double paperWidth = min(paperWidthInRobotMoves, maxRobotWidth);
 final double paperHight = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
 const double xOffset    = 0;
 const double yOffset    = 0;
 const double marginFactor = 1.0;
-final double xMargin = (paperWidth * (1-marginFactor)) / 2;
-final double yMargin = (paperHight * (1-marginFactor)) / 2;
+final double xMargin      = (paperWidth * (1 - marginFactor)) / 2;
+final double yMargin      = (paperHight * (1 - marginFactor)) / 2;
+
+const Offset waterOffset   = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
+const Offset cleanerOffset = Offset(5   * cupSize + 5 * spaceBetweenCups, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner);
+final Offset yellowOffset = getColorOffset(0, 0);
+final Offset orangeOffset = getColorOffset(0, 1);
+final Offset redOffset    = getColorOffset(0, 2);
+final Offset purpleOffset = getColorOffset(0, 3);
+final Offset brownOffset  = getColorOffset(0, 4);
+final Offset blackOffset  = getColorOffset(0, 5);
+final Offset lgreenOffset = getColorOffset(1, 0);
+final Offset dgreenOffset = getColorOffset(1, 1);
+final Offset lblueOffset  = getColorOffset(1, 2);
+final Offset dblueOffset  = getColorOffset(1, 3);
+final Offset pinkOffset   = getColorOffset(1, 4);
+final Offset whiteOffset  = getColorOffset(1, 5);
 
 const Offset dummyOffset = Offset(-1, -1);
-const Offset waterOffset = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
-const Offset cleanerOffset = Offset(5 * cupSize + 5 * spaceBetweenCups, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner);
-final Offset redOffset   = getColorOffset(0, 1);
-final Offset greenOffset = getColorOffset(0, 2);
-final Offset blueOffset  = getColorOffset(0, 3);
-
-
 final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
 final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
 final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());

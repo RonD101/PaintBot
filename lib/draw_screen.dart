@@ -17,7 +17,7 @@ class DrawState extends State<DrawerScreen> {
   MenuSelection selectedMenu = MenuSelection.brushColor;
   List<DrawingPoint> points  = [];
   Color selectedColor        = Colors.red;
-  double strokeWidth         = 3.0;
+  double strokeWidth         = 8.0;
   bool displayMenu           = false;
   
   @override
@@ -28,7 +28,7 @@ class DrawState extends State<DrawerScreen> {
             child: Container(
                 padding: const EdgeInsets.only(left: 60.0, right: 60.0),
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20.0), color: const Color.fromRGBO(255, 215, 0, 1)),
+                    borderRadius: BorderRadius.circular(20.0), color: const Color.fromRGBO(170, 169, 173, 1)),
                 child: Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
@@ -157,9 +157,18 @@ class DrawState extends State<DrawerScreen> {
 
   List<Widget> getColoredCircleList() {
     return [
-      createColoredCircle(Colors.red), 
+      createColoredCircle(Colors.yellow), 
+      createColoredCircle(Colors.orange), 
+      createColoredCircle(Colors.red),
+      createColoredCircle(Colors.purple), 
+      createColoredCircle(Colors.brown), 
+      createColoredCircle(Colors.black),
+      createColoredCircle(Colors.lightGreen), 
       createColoredCircle(Colors.green), 
-      createColoredCircle(Colors.blue)
+      createColoredCircle(Colors.lightBlue),
+      createColoredCircle(Colors.blue), 
+      createColoredCircle(Colors.pink), 
+      createColoredCircle(Colors.white)
     ];
   }
 
