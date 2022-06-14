@@ -21,21 +21,21 @@
 // Insert RTDB URLefine the RTDB URL */
 #define DATABASE_URL "https://paintbot-a1067-default-rtdb.firebaseio.com/"
 
-#define WEB_DEBUG
+//#define WEB_DEBUG
 #define SERIAL_DEBUG
 
-#define LEFT_MOTOR_ENABLE_PIN 27
+#define LEFT_MOTOR_ENABLE_PIN 35
 #define LEFT_MOTOR_STEP_PIN 25
 #define LEFT_MOTOR_DIR_PIN 26
 
-#define RIGHT_MOTOR_ENABLE_PIN 14
+#define RIGHT_MOTOR_ENABLE_PIN 32
 #define RIGHT_MOTOR_STEP_PIN 13
 #define RIGHT_MOTOR_DIR_PIN 12
 
 #define SERVO_PIN 33
 
-#define LEFT_SENSOR_PIN 32
-#define DOWN_SENSOR_PIN 35
+#define LEFT_SENSOR_PIN 14
+#define DOWN_SENSOR_PIN 27
 
 #define LED_PIN 2
 
@@ -43,7 +43,7 @@
   AsyncWebServer server(80);
 #endif
 
-Servo myservo;  // create servo object to control a servo
+Servo myservo;
 
 //Define Firebase Data object
 FirebaseData fbdo;
@@ -316,13 +316,15 @@ void mainLoop() {
 
 void goHome() {
   debugPrintln("Start go home");
-  HomeLeftState = digitalRead(LEFT_SENSOR_PIN);
   HomeDownState = digitalRead(DOWN_SENSOR_PIN);
+  delay(10);
   while (HomeDownState == HIGH) {
     stepDown();
     HomeDownState = digitalRead(DOWN_SENSOR_PIN);
   }
   debugPrintln("Finish go down");
+  HomeLeftState = digitalRead(LEFT_SENSOR_PIN);
+  delay(10);
   while (HomeLeftState == HIGH) {
     stepLeft();
     HomeLeftState = digitalRead(LEFT_SENSOR_PIN);
