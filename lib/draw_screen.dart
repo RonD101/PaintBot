@@ -17,9 +17,8 @@ class DrawState extends State<DrawerScreen> {
   MenuSelection selectedMenu = MenuSelection.brushColor;
   List<DrawingPoint> points  = [];
   Color selectedColor        = Colors.red;
-  double strokeWidth         = 8.0;
   bool displayMenu           = false;
-  
+  double strokeWidth         = 5.1257142857142854;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -253,7 +252,7 @@ class DrawState extends State<DrawerScreen> {
 
   void restartHandler() async {
     selectedColor = Colors.red;
-    strokeWidth   = 3.0;
+    strokeWidth   = 5.1257142857142854;
     selectedMenu  = MenuSelection.strokeWidth;
     displayMenu   = false;
     points.clear();

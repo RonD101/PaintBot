@@ -11,11 +11,14 @@ enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
 enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
-const double opacity       = 0.8;
-const int    pulseCapacity = 500;
-const int    numPointForRefill = 300;
+const int pulseCapacity            = 250;
+const int numPointForRefill        = 250;
+const int remainingColorThreshhold = 50;
+const int maxNumOfCompMoves        = 10000;
 
-const double ticksPerCM = 100;
+const double opacity       = 0.8;
+const double normForStrokeWidth = 0.0075;
+const double ticksPerCM = 2 * 100;
 const double maxRobotWidth               = 25   * ticksPerCM;
 const double maxRobotHight               = 19   * ticksPerCM;
 const double spaceBetweenLastCupAndWater = 1    * ticksPerCM;
@@ -23,10 +26,10 @@ const double spaceBetweenCups            = 0.5  * ticksPerCM;
 const double spaceToCleaner              = 0.65 * ticksPerCM;
 const double cupSize                     = 3    * ticksPerCM;
 const double waterCupSize                = 3.8  * ticksPerCM;
-const double distOfCleaner               = 14   * ticksPerCM;
+const double distOfCleaner               = 7    * ticksPerCM;
 const double palleteHight                = 7    * ticksPerCM;
-
-const double xColorOffset   = cupSize / 2;
+const double xColorOffset                = 0.4  * ticksPerCM;
+const double yColorOffset                = 0    * ticksPerCM;
 const double distInCup      = cupSize / 3;
 const double paperWidthInCM = 29.7;
 const double paperHightInCM = 21;
@@ -40,8 +43,8 @@ const double marginFactor = 1.0;
 final double xMargin      = (paperWidth * (1 - marginFactor)) / 2;
 final double yMargin      = (paperHight * (1 - marginFactor)) / 2;
 
-const Offset waterOffset   = Offset(5.5 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight);
-const Offset cleanerOffset = Offset(5   * cupSize + 5 * spaceBetweenCups, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner);
+const Offset waterOffset   = Offset(6 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight - yColorOffset);
+const Offset cleanerOffset = Offset(5 * cupSize + 5 * spaceBetweenCups + xColorOffset, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner - yColorOffset);
 final Offset yellowOffset = getColorOffset(0, 0);
 final Offset orangeOffset = getColorOffset(0, 1);
 final Offset redOffset    = getColorOffset(0, 2);
@@ -118,7 +121,7 @@ class BotIcons {
 }
 
 Offset getColorOffset(int row, int col) {
-  final double xOffset = cupSize * col + cupSize / 2 + spaceBetweenCups * col;
-  final double yOffset = maxRobotHight - ((cupSize + spaceBetweenCups) * row);
+  final double xOffset = cupSize * col + cupSize / 2 + spaceBetweenCups * col + xColorOffset;
+  final double yOffset = maxRobotHight - ((cupSize + spaceBetweenCups) * row) - yColorOffset;
   return Offset(xOffset, yOffset);
 }

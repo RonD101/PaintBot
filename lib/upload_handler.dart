@@ -1,7 +1,12 @@
+import 'package:flutter/cupertino.dart';
 import 'app_utils.dart';
 
 Future<void> startUploading(List<CompMove> compressedMoves) async {
   final int numOfMoves = compressedMoves.length;
+  if (numOfMoves > maxNumOfCompMoves) {
+    debugPrint("Painting too large!!!");
+    return;
+  }
   int numOfPulses = numOfMoves ~/ pulseCapacity;
   if (numOfMoves % pulseCapacity != 0) {
     numOfPulses++;

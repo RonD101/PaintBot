@@ -44,6 +44,7 @@ void addColor(List<DrawingPoint> points, Color color) {
   }
   points.add(DrawingPoint(location: colorOffset, type: PointType.regular, paint: Paint()));
   sweepBrushInCup(points);
+  sweepBrushInCup(points);
   points.add(upPoint);
   points.add(downPoint);
 }
@@ -52,7 +53,6 @@ void addWater(List<DrawingPoint> points) {
   points.add(upPoint);
   points.add(downPoint);
   points.add(DrawingPoint(location: waterOffset, type: PointType.regular, paint: Paint()));
-  sweepBrushInCup(points);
   sweepBrushInCup(points);
 }
 

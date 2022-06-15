@@ -53,16 +53,16 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         numOfCurColor++;
       }
       if (numOfCurColor > numPointForRefill) {
-        numOfCurColor = 0;
-        addColor(pointsWithColor, curColor);
+        if (getLeftNumOfCur(pointsWithColor, curColor, i) > remainingColorThreshhold) {
+          numOfCurColor = 0;
+          addColor(pointsWithColor, curColor);
+        }
       }
     }
   }
-  addWater(pointsWithColor); // every draw ends with water.
+  addWater(pointsWithColor); // every draw ends with water, and two cleans.
   cleanBrush(pointsWithColor);
-  for (var p in pointsWithColor) {
-    p.printPoint();
-  }  
+  cleanBrush(pointsWithColor);
   return pointsWithColor;
 }
 
@@ -211,4 +211,18 @@ List<CompMove> getCompressedMoves(List<RobotMove> robotMoves) {
     }
   }
   return compressedMoves;
+}
+
+int getLeftNumOfCur(List<DrawingPoint> points, Color color, int curPoint) {
+  int leftNum = 0;
+  for (int i = curPoint; i < points.length; i++) {
+    if (points[i].type != PointType.regular) {
+      continue;
+    }
+    if (points[i].paint.color != color) {
+      break;
+    }
+    leftNum++;
+  }  
+  return leftNum;
 }
