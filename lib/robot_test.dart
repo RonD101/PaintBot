@@ -20,11 +20,11 @@ void squareTest() async {
   List<DrawingPoint> points = [];
   addColor(points, Colors.red);
   points.add(downPoint);
-  points.add(DrawingPoint(location: const Offset(100, 10) , type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: const Offset(100, 100), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: const Offset(10 , 100), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: const Offset(10 , 10) , type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: const Offset(100, 10) , type: PointType.regular, paint: Paint()));
+  points.add(DrawingPoint(location: const Offset(100, 10) , type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: const Offset(100, 100), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: const Offset(10 , 100), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: const Offset(10 , 10) , type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: const Offset(100, 10) , type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
   await uploadTest(points);
 }
 

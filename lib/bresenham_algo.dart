@@ -21,7 +21,7 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
     final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + (cur.location.dy - statusBar) * fScale);
-    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint));
+    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint, strokeWidth: cur.strokeWidth));
   }
   return scaledPoints;
 }
@@ -84,7 +84,7 @@ List<DrawingPoint> getSmoothPoints(List<DrawingPoint> pointsWithColors) {
       smoothPoints.add(downPoint);
       final double prevX = pointsWithColors[i - 1].location.dx;
       final double nextY = pointsWithColors[i + 2].location.dy;
-      smoothPoints.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint()));
+      smoothPoints.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint(), strokeWidth: cur.strokeWidth));
       i++;
     } else {
       smoothPoints.add(cur);
@@ -138,7 +138,7 @@ List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1) {
   var sy = (y0 < y1) ? 1 : -1;
   var err = dx - dy;
   while (true) {
-    bresenhamPoints.add(DrawingPoint(location: Offset(x0.toDouble(), y0.toDouble()), type: PointType.regular, paint: Paint()));
+    bresenhamPoints.add(DrawingPoint(location: Offset(x0.toDouble(), y0.toDouble()), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }

@@ -42,7 +42,7 @@ void addColor(List<DrawingPoint> points, Color color) {
   else if (color.red == 255 && color.green == 255 && color.blue == 255) {
     colorOffset = whiteOffset;
   }
-  points.add(DrawingPoint(location: colorOffset, type: PointType.regular, paint: Paint()));
+  points.add(DrawingPoint(location: colorOffset, type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
   sweepBrushInCup(points);
   sweepBrushInCup(points);
   points.add(upPoint);
@@ -52,38 +52,38 @@ void addColor(List<DrawingPoint> points, Color color) {
 void addWater(List<DrawingPoint> points) {
   points.add(upPoint);
   points.add(downPoint);
-  points.add(DrawingPoint(location: waterOffset, type: PointType.regular, paint: Paint()));
+  points.add(DrawingPoint(location: waterOffset, type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
   sweepBrushInCup(points);
 }
 
 void sweepBrushInCup(List<DrawingPoint> points) {
   final double lastX = points.last.location.dx;
   final double lastY = points.last.location.dy;
-  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX            , lastY - distInCup), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX            , lastY - distInCup), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint()));
+  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY - distInCup), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY - distInCup), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
 }
 
 void cleanBrush(List<DrawingPoint> points) {
   points.add(upPoint);
   points.add(downPoint);
-  points.add(DrawingPoint(location: cleanerOffset, type: PointType.regular, paint: Paint()));
+  points.add(DrawingPoint(location: cleanerOffset, type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
   final double lastX = points.last.location.dx;
   final double lastY = points.last.location.dy;
-  points.add(DrawingPoint(location: Offset(lastX - distOfCleaner, lastY), type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: cleanerOffset, type: PointType.regular, paint: Paint()));
-  points.add(DrawingPoint(location: cleanerOffset, type: PointType.regular, paint: Paint()));
+  points.add(DrawingPoint(location: Offset(lastX - distOfCleaner, lastY), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: cleanerOffset, type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
+  points.add(DrawingPoint(location: cleanerOffset, type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth));
 }
 
 bool isSameColor(Color first, MaterialColor second) {
