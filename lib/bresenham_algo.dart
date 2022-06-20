@@ -53,7 +53,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         numOfCurColor++;
       }
       if (numOfCurColor > numPointForRefill) {
-        if (getLeftNumOfCur(pointsWithColor, curColor, i) > remainingColorThreshhold) {
+        if (getLeftNumOfCur(pointsWithColor, curColor, i) > minRemainForRefill) {
           numOfCurColor = 0;
           addColor(pointsWithColor, curColor);
         }
@@ -169,12 +169,12 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
       continue;
     }
     if (cur.type == PointType.dummyDown) {
-      if (nex.strokeWidth == defaultwidth) {
-        robotMoves.add(RobotMove.servoDown);
+      if (nex.strokeWidth == defaultWidth) {
+        robotMoves.add(RobotMove.servoLight);
       } else if (nex.strokeWidth == mediumWidth) {
-        robotMoves.add(RobotMove.servoDown);
+        robotMoves.add(RobotMove.servoMiddle);
       } else if (nex.strokeWidth == thickWidth) {
-        robotMoves.add(RobotMove.servoDown);
+        robotMoves.add(RobotMove.servoThick);
       } else {
         assert (false);
       }
