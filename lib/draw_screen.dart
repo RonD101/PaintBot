@@ -258,7 +258,7 @@ class DrawState extends State<DrawerScreen> {
     points.clear();
     await movesRef.remove();
     await numOfMovesRef.remove();
-    await flagRef.remove();
+    await flagRef.set(UploadFlag.readyForPulse.index);
   }
 
   void undoHandler() async {

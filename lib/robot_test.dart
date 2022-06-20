@@ -6,13 +6,23 @@ import 'brush_handler.dart';
 
 void rightUpAllWayTest() async {
   List<CompMove> compressedMoves = [];
-  for (int i = 0; i < 10000; i++) {
-  compressedMoves.add(CompMove(num: 1, move: RobotMove.right));
-  }
-  /*compressedMoves.add(CompMove(num: maxRobotWidth.toInt(), move: RobotMove.right));
-  compressedMoves.add(CompMove(num: maxRobotHeight.toInt(), move: RobotMove.up));
-  compressedMoves.add(CompMove(num: maxRobotWidth.toInt(), move: RobotMove.left));
-  compressedMoves.add(CompMove(num: maxRobotHeight.toInt(), move: RobotMove.down));*/
+  
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+    compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+    compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+    compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+    compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
+    compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoDown));
   await startUploading(compressedMoves);
 }
 
