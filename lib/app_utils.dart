@@ -17,6 +17,9 @@ const int remainingColorThreshhold = 50;
 const int maxNumOfCompMoves        = 10000;
 
 const double opacity       = 0.8;
+const double defaultwidth = 5.1257142857142854;
+const double mediumWidth = 8;
+const double thickWidth = 13;
 const double normForStrokeWidth = 0.0075;
 const double ticksPerCM = 100;
 const double maxRobotWidth               = 25   * ticksPerCM;
@@ -59,9 +62,9 @@ final Offset pinkOffset   = getColorOffset(1, 4);
 final Offset whiteOffset  = getColorOffset(1, 5);
 
 const Offset dummyOffset = Offset(-1, -1);
-final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
-final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
-final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());
+final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint(), strokeWidth: defaultwidth);
+final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint(), strokeWidth: defaultwidth);
+final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint(), strokeWidth: defaultwidth);
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");
@@ -80,7 +83,8 @@ class DrawingPoint {
   final PointType type;
   final Offset    location;
   final Paint     paint;
-  const DrawingPoint({required this.location, required this.type, required this.paint});
+  final double    strokeWidth;
+  const DrawingPoint({required this.location, required this.type, required this.paint, required this.strokeWidth});
   void printPoint() {
     debugPrint(location.dx.round().toString() + " " + location.dy.round().toString() + " " + type.toString());
   }

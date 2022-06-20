@@ -18,7 +18,7 @@ class DrawState extends State<DrawerScreen> {
   List<DrawingPoint> points  = [];
   Color selectedColor        = Colors.red;
   bool displayMenu           = false;
-  double strokeWidth         = 5.1257142857142854;
+  double strokeWidth         = defaultwidth;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +54,8 @@ class DrawState extends State<DrawerScreen> {
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
                   ..color = selectedColor.withOpacity(opacity)
-                  ..strokeWidth = strokeWidth));
+                  ..strokeWidth = strokeWidth,
+                strokeWidth: strokeWidth));
           });
         },
         onPanStart: (details) {
@@ -67,7 +68,8 @@ class DrawState extends State<DrawerScreen> {
                   ..strokeCap = StrokeCap.round
                   ..isAntiAlias = true
                   ..color = selectedColor.withOpacity(opacity)
-                  ..strokeWidth = strokeWidth));
+                  ..strokeWidth = strokeWidth,
+                strokeWidth: strokeWidth));
           });
         },
         onPanEnd: (details) {
@@ -173,9 +175,9 @@ class DrawState extends State<DrawerScreen> {
 
   List<Widget> getWidthCircleList() {
     return [
-      createWidthCircle(3, 16, 16), 
-      createWidthCircle(8, 20, 20), 
-      createWidthCircle(13, 24, 24)
+      createWidthCircle(defaultwidth, 16, 16), 
+      createWidthCircle(mediumWidth, 20, 20), 
+      createWidthCircle(thickWidth, 24, 24)
     ];
   }
 
@@ -252,7 +254,7 @@ class DrawState extends State<DrawerScreen> {
 
   void restartHandler() async {
     selectedColor = Colors.red;
-    strokeWidth   = 5.1257142857142854;
+    strokeWidth   = defaultwidth;
     selectedMenu  = MenuSelection.strokeWidth;
     displayMenu   = false;
     points.clear();
