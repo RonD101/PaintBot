@@ -21,7 +21,7 @@ List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, doub
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
     final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + (cur.location.dy - statusBar) * fScale);
-    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint));
+    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint, strokeWidth: cur.strokeWidth));
   }
   return scaledPoints;
 }
@@ -84,7 +84,7 @@ List<DrawingPoint> getSmoothPoints(List<DrawingPoint> pointsWithColors) {
       smoothPoints.add(downPoint);
       final double prevX = pointsWithColors[i - 1].location.dx;
       final double nextY = pointsWithColors[i + 2].location.dy;
-      smoothPoints.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint()));
+      smoothPoints.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint(), strokeWidth: cur.strokeWidth));
       i++;
     } else {
       smoothPoints.add(cur);
@@ -110,8 +110,9 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
     final int curY = smoothPoints[i].location.dy.round();
     final int nexX = smoothPoints[i + 1].location.dx.round();
     final int nexY = smoothPoints[i + 1].location.dy.round();
+    final double curWidth = smoothPoints[i].strokeWidth;
     if (curType == PointType.regular && nexType == PointType.regular) {
-      bresenhamPoints += localBresenham(curX, curY, nexX, nexY);
+      bresenhamPoints += localBresenham(curX, curY, nexX, nexY, curWidth);
     } else if (curType == PointType.regular && nexType != PointType.regular) {
       continue;
     } else if (curType == PointType.dummyUp) {
@@ -121,8 +122,8 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
       final int beforeUpY = smoothPoints[i - 2].location.dy.round();
       final int afterLogisticX = smoothPoints[i + 2].location.dx.round();
       final int afterLogisticY = smoothPoints[i + 2].location.dy.round();
-      bresenhamPoints += localBresenham(beforeUpX, beforeUpY, nexX, nexY);
-      bresenhamPoints += localBresenham(nexX, nexY, afterLogisticX, afterLogisticY);
+      bresenhamPoints += localBresenham(beforeUpX, beforeUpY, nexX, nexY, curWidth);
+      bresenhamPoints += localBresenham(nexX, nexY, afterLogisticX, afterLogisticY, curWidth);
       bresenhamPoints.add(downPoint);
       i++;
     }
@@ -130,7 +131,7 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
   return bresenhamPoints;
 }
 
-List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1) {
+List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1, double width) {
   List<DrawingPoint> bresenhamPoints = [];
   var dx = (x1 - x0).abs();
   var dy = (y1 - y0).abs();
@@ -138,7 +139,10 @@ List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1) {
   var sy = (y0 < y1) ? 1 : -1;
   var err = dx - dy;
   while (true) {
-    bresenhamPoints.add(DrawingPoint(location: Offset(x0.toDouble(), y0.toDouble()), type: PointType.regular, paint: Paint()));
+    bresenhamPoints.add(DrawingPoint(location: Offset(x0.toDouble(),y0.toDouble()),
+                                     type: PointType.regular,
+                                     paint: Paint(),
+                                     strokeWidth: width));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }
@@ -165,7 +169,15 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
       continue;
     }
     if (cur.type == PointType.dummyDown) {
-      robotMoves.add(RobotMove.servoDown);
+      if (nex.strokeWidth == defaultwidth) {
+        robotMoves.add(RobotMove.servoDown);
+      } else if (nex.strokeWidth == mediumWidth) {
+        robotMoves.add(RobotMove.servoDown);
+      } else if (nex.strokeWidth == thickWidth) {
+        robotMoves.add(RobotMove.servoDown);
+      } else {
+        assert (false);
+      }
       continue;
     }
     if (cur.type == PointType.dummyUp) {
