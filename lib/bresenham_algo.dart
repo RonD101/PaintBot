@@ -4,24 +4,24 @@ import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
 // scaled - DD rrr DU DD bbb DU
-List<DrawingPoint> getScaledPoints(
-    List<DrawingPoint> points, double width, double hight, double statusBar) {
+List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight, double statusBar) {
   hight -= (kBottomNavigationBarHeight + statusBar); // remove menu height
-  final double xScale = (paperWidth / width) * marginFactor;
-  final double yScale = (paperHight / hight) * marginFactor;
+  final double xScale = paperWidth / width;
+  final double yScale = paperHight / hight;
+  final double fScale = min(xScale, yScale) * marginFactor;
   final double xBase;
   final double yBase;
-  xBase = xOffset + xMargin;
-  yBase = yOffset + yMargin;
+  if (fScale == xScale) {
+    xBase = xOffset + xMargin;
+    yBase = ((paperHight - hight * fScale) / 2) + yOffset + yMargin;
+  } else {
+    xBase = ((paperWidth - width * fScale) / 2) + xOffset + xMargin;
+    yBase = yOffset + yMargin;
+  }
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
-    final Offset scaledP = Offset(xBase + cur.location.dx * xScale,
-        yBase + (cur.location.dy - statusBar) * yScale);
-    scaledPoints.add(DrawingPoint(
-        location: scaledP,
-        type: cur.type,
-        paint: cur.paint,
-        strokeWidth: cur.strokeWidth));
+    final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + (cur.location.dy - statusBar) * fScale);
+    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint, strokeWidth: cur.strokeWidth));
   }
   return scaledPoints;
 }
@@ -127,10 +127,8 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
       final int beforeUpY = smoothPoints[i - 2].location.dy.round();
       final int afterLogisticX = smoothPoints[i + 2].location.dx.round();
       final int afterLogisticY = smoothPoints[i + 2].location.dy.round();
-      bresenhamPoints +=
-          localBresenham(beforeUpX, beforeUpY, nexX, nexY, curWidth);
-      bresenhamPoints +=
-          localBresenham(nexX, nexY, afterLogisticX, afterLogisticY, curWidth);
+      bresenhamPoints += localBresenham(beforeUpX, beforeUpY, nexX, nexY, curWidth);
+      bresenhamPoints += localBresenham(nexX, nexY, afterLogisticX, afterLogisticY, curWidth);
       bresenhamPoints.add(downPoint);
       i++;
     }
@@ -147,11 +145,7 @@ List<DrawingPoint> localBresenham(
   var sy = (y0 < y1) ? 1 : -1;
   var err = dx - dy;
   while (true) {
-    bresenhamPoints.add(DrawingPoint(
-        location: Offset(x0.toDouble(), y0.toDouble()),
-        type: PointType.regular,
-        paint: Paint(),
-        strokeWidth: width));
+    bresenhamPoints.add(DrawingPoint(location: Offset(x0.toDouble(), y0.toDouble()), type: PointType.regular, paint: Paint(), strokeWidth: width));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }
