@@ -13,8 +13,8 @@
 // Insert your network credentials
 #define WIFI_SSID "TechPublic"
 #define WIFI_PASSWORD ""
-//#define WIFI_SSID "RonDiPhone"
-//#define WIFI_PASSWORD "12345678"
+//#define WIFI_SSID_2 "RonDiPhone"
+//#define WIFI_PASSWORD_2 "12345678"
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyAIVdnB_mJA6_ZV5G9ctjWO7aQRLJk_DjQ"
 // Insert RTDB URLefine the RTDB URL */
@@ -32,6 +32,10 @@
 #define DOWN_SENSOR_PIN 27
 #define LED_PIN 2
 #define PAYLOAD_SIZE 500
+#define SERVO_UP 20
+#define SERVO_LIGHT 135
+#define SERVO_MIDDLE 150
+#define SERVO_THICK 180
 
 #ifdef WEB_DEBUG
   AsyncWebServer server(80);
@@ -97,7 +101,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
-  while (WiFi.status() != WL_CONNECTED){
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(300);
   }
@@ -111,7 +115,7 @@ void setup() {
   /* Assign the RTDB URL (required) */
   config.database_url = DATABASE_URL;
 
-  while (!Firebase.signUp(&config, &auth, "", "")){
+  while (!Firebase.signUp(&config, &auth, "", "")) {
     Serial.println(config.signer.signupError.message.c_str());
   }
   Serial.println("FireBase sign up connected");
@@ -149,6 +153,7 @@ void loop() {
       return;
   } else {
       printDebugErrors();
+      sendDataPrevMillis = 0;
       return;
   }
   if (flag == 4) {
@@ -192,16 +197,18 @@ void loop() {
         else if (elem == 7)
             stepLeftDown();
         else if (elem == 8) {
-            delay(300);
-            myservo.write(180); // servo up
-            delay(300);
+            setServo(SERVO_UP);
         }
         else if (elem == 9) {
-            delay(300);
-            myservo.write(50); // servo down
-            delay(300);
+            setServo(SERVO_THICK);
         }
         else if (elem == 10) {
+            setServo(SERVO_MIDDLE);
+        }
+        else if (elem == 11) {
+            setServo(SERVO_LIGHT);
+        }
+        else if (elem == 12) {
             goHome();
         }
         else
@@ -241,7 +248,6 @@ void loop() {
       debugPrintln("Finished load!");
       counter += 1;
     } else {
-      debugPrintln("Weired shit man");
       printDebugErrors();
       bool writtenError = false;
       while(!writtenError) {
@@ -297,6 +303,12 @@ void mainLoop() {
     if (i > 9 * timeLap && i <  10 * timeLap)
     stepDown();
   }
+}
+
+void setServo(int ang) {
+  delay(300);
+  myservo.write(ang);
+  delay(300);
 }
 
 void goHome() {
