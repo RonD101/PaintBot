@@ -4,24 +4,24 @@ import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
 // scaled - DD rrr DU DD bbb DU
-List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight, double statusBar) {
+List<DrawingPoint> getScaledPoints(
+    List<DrawingPoint> points, double width, double hight, double statusBar) {
   hight -= (kBottomNavigationBarHeight + statusBar); // remove menu height
-  final double xScale = paperWidth / width;
-  final double yScale = paperHight / hight;
-  final double fScale = min(xScale, yScale) * marginFactor;
+  final double xScale = (paperWidth / width) * marginFactor;
+  final double yScale = (paperHight / hight) * marginFactor;
   final double xBase;
   final double yBase;
-  if (fScale == xScale) {
-    xBase = xOffset + xMargin;
-    yBase = ((paperHight - hight * fScale) / 2) + yOffset + yMargin;
-  } else {
-    xBase = ((paperWidth - width * fScale) / 2) + xOffset + xMargin;
-    yBase = yOffset + yMargin;
-  }
+  xBase = xOffset + xMargin;
+  yBase = yOffset + yMargin;
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
-    final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + (cur.location.dy - statusBar) * fScale);
-    scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint, strokeWidth: cur.strokeWidth));
+    final Offset scaledP = Offset(xBase + cur.location.dx * xScale,
+        yBase + (cur.location.dy - statusBar) * yScale);
+    scaledPoints.add(DrawingPoint(
+        location: scaledP,
+        type: cur.type,
+        paint: cur.paint,
+        strokeWidth: cur.strokeWidth));
   }
   return scaledPoints;
 }
@@ -41,8 +41,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         curColor = scaledPoints[i + 2].paint.color;
         addColor(pointsWithColor, curColor);
         numOfCurColor = 0;
-      }
-      else { 
+      } else {
         pointsWithColor.add(cur);
         pointsWithColor.add(nex);
       }
@@ -53,16 +52,17 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         numOfCurColor++;
       }
       if (numOfCurColor > numPointForRefill) {
-        if (getLeftNumOfCur(pointsWithColor, curColor, i) > minRemainForRefill) {
+        if (getLeftNumOfCur(pointsWithColor, curColor, i) >
+            minRemainForRefill) {
           numOfCurColor = 0;
           addColor(pointsWithColor, curColor);
         }
       }
     }
   }
-  addWater(pointsWithColor); 
+  addWater(pointsWithColor);
   cleanBrush(pointsWithColor, longDistClean);
-  addWater(pointsWithColor); 
+  addWater(pointsWithColor);
   cleanBrush(pointsWithColor, longDistClean);
   cleanBrush(pointsWithColor, longDistClean);
   return pointsWithColor;
@@ -86,7 +86,11 @@ List<DrawingPoint> getSmoothPoints(List<DrawingPoint> pointsWithColors) {
       smoothPoints.add(downPoint);
       final double prevX = pointsWithColors[i - 1].location.dx;
       final double nextY = pointsWithColors[i + 2].location.dy;
-      smoothPoints.add(DrawingPoint(location: Offset(prevX, nextY), type: PointType.regular, paint: Paint(), strokeWidth: cur.strokeWidth));
+      smoothPoints.add(DrawingPoint(
+          location: Offset(prevX, nextY),
+          type: PointType.regular,
+          paint: Paint(),
+          strokeWidth: cur.strokeWidth));
       i++;
     } else {
       smoothPoints.add(cur);
@@ -124,8 +128,10 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
       final int beforeUpY = smoothPoints[i - 2].location.dy.round();
       final int afterLogisticX = smoothPoints[i + 2].location.dx.round();
       final int afterLogisticY = smoothPoints[i + 2].location.dy.round();
-      bresenhamPoints += localBresenham(beforeUpX, beforeUpY, nexX, nexY, curWidth);
-      bresenhamPoints += localBresenham(nexX, nexY, afterLogisticX, afterLogisticY, curWidth);
+      bresenhamPoints +=
+          localBresenham(beforeUpX, beforeUpY, nexX, nexY, curWidth);
+      bresenhamPoints +=
+          localBresenham(nexX, nexY, afterLogisticX, afterLogisticY, curWidth);
       bresenhamPoints.add(downPoint);
       i++;
     }
@@ -133,7 +139,8 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
   return bresenhamPoints;
 }
 
-List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1, double width) {
+List<DrawingPoint> localBresenham(
+    int x0, int y0, int x1, int y1, double width) {
   List<DrawingPoint> bresenhamPoints = [];
   var dx = (x1 - x0).abs();
   var dy = (y1 - y0).abs();
@@ -141,10 +148,11 @@ List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1, double width) 
   var sy = (y0 < y1) ? 1 : -1;
   var err = dx - dy;
   while (true) {
-    bresenhamPoints.add(DrawingPoint(location: Offset(x0.toDouble(),y0.toDouble()),
-                                     type: PointType.regular,
-                                     paint: Paint(),
-                                     strokeWidth: width));
+    bresenhamPoints.add(DrawingPoint(
+        location: Offset(x0.toDouble(), y0.toDouble()),
+        type: PointType.regular,
+        paint: Paint(),
+        strokeWidth: width));
     if ((x0 == x1) && (y0 == y1)) {
       break;
     }
@@ -176,7 +184,7 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
       } else if (nex.strokeWidth == thickWidth) {
         robotMoves.add(RobotMove.servoThick);
       } else {
-        assert (false);
+        assert(false);
       }
       continue;
     }
@@ -186,24 +194,24 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
     }
     final Point curLoc = Point(cur.location.dx, cur.location.dy);
     final Point nexLoc = Point(nex.location.dx, nex.location.dy);
-    if (       curLoc.x <  nexLoc.x && curLoc.y == nexLoc.y) {
+    if (curLoc.x < nexLoc.x && curLoc.y == nexLoc.y) {
       robotMoves.add(RobotMove.right);
-    } else if (curLoc.x >  nexLoc.x && curLoc.y == nexLoc.y) {
+    } else if (curLoc.x > nexLoc.x && curLoc.y == nexLoc.y) {
       robotMoves.add(RobotMove.left);
     } else if (curLoc.x == nexLoc.x && curLoc.y < nexLoc.y) {
       robotMoves.add(RobotMove.down);
     } else if (curLoc.x == nexLoc.x && curLoc.y > nexLoc.y) {
       robotMoves.add(RobotMove.up);
-    } else if (curLoc.x <  nexLoc.x && curLoc.y < nexLoc.y) {
+    } else if (curLoc.x < nexLoc.x && curLoc.y < nexLoc.y) {
       robotMoves.add(RobotMove.rightDown);
       robotMoves.add(RobotMove.rightDown);
-    } else if (curLoc.x <  nexLoc.x && curLoc.y > nexLoc.y) {
+    } else if (curLoc.x < nexLoc.x && curLoc.y > nexLoc.y) {
       robotMoves.add(RobotMove.rightUp);
       robotMoves.add(RobotMove.rightUp);
-    } else if (curLoc.x >  nexLoc.x && curLoc.y < nexLoc.y) {
+    } else if (curLoc.x > nexLoc.x && curLoc.y < nexLoc.y) {
       robotMoves.add(RobotMove.leftDown);
       robotMoves.add(RobotMove.leftDown);
-    } else if (curLoc.x >  nexLoc.x && curLoc.y > nexLoc.y) {
+    } else if (curLoc.x > nexLoc.x && curLoc.y > nexLoc.y) {
       robotMoves.add(RobotMove.leftUp);
       robotMoves.add(RobotMove.leftUp);
     }
@@ -235,6 +243,6 @@ int getLeftNumOfCur(List<DrawingPoint> points, Color color, int curPoint) {
       break;
     }
     leftNum++;
-  }  
+  }
   return leftNum;
 }
