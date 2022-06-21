@@ -4,32 +4,36 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 
 // 10cm/1000 = 10 * 10^-5 meters/tick left/right/up/down.
-enum RobotMove     { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoDown, goHome }
+enum RobotMove     { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoThick, servoMiddle, servoLight, goHome }
 enum UploadFlag    { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
 enum PulseStatus   { nextPulse, reuploadPulse, finishedPulses }
 enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
 enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
-const int pulseCapacity            = 250;
-const int numPointForRefill        = 250;
-const int remainingColorThreshhold = 50;
-const int maxNumOfCompMoves        = 10000;
+const int pulseCapacity      = 250;
+const int numPointForRefill  = 250;
+const int minRemainForRefill = 50;
+const int maxNumOfCompMoves  = 10000;
 
-const double opacity       = 0.8;
-const double normForStrokeWidth = 0.0075;
-const double ticksPerCM = 2 * 100;
-const double maxRobotWidth               = 25   * ticksPerCM;
-const double maxRobotHight               = 19   * ticksPerCM;
-const double spaceBetweenLastCupAndWater = 1    * ticksPerCM;
-const double spaceBetweenCups            = 0.5  * ticksPerCM;
-const double spaceToCleaner              = 0.65 * ticksPerCM;
-const double cupSize                     = 3    * ticksPerCM;
-const double waterCupSize                = 3.8  * ticksPerCM;
-const double distOfCleaner               = 7    * ticksPerCM;
-const double palleteHight                = 7    * ticksPerCM;
-const double xColorOffset                = 0.4  * ticksPerCM;
-const double yColorOffset                = 0    * ticksPerCM;
+const double opacity     = 0.8;
+const double lightWidth  = 5.1257142857142854;
+const double thickWidth  = 8;
+
+const double ticksPerCM = 100;
+const double maxRobotWidth        = 25   * ticksPerCM;
+const double maxRobotHight        = 19   * ticksPerCM;
+const double spaceLastCupAndWater = 1    * ticksPerCM;
+const double spaceBetweenCups     = 0.5  * ticksPerCM;
+const double spaceToCleaner       = 0.65 * ticksPerCM;
+const double cupSize              = 3    * ticksPerCM;
+const double waterCupSize         = 3.8  * ticksPerCM;
+const double longDistClean        = 7    * ticksPerCM;
+const double shortDistClean       = 1    * ticksPerCM;
+
+const double palleteHight         = 7    * ticksPerCM;
+const double xColorOffset         = 0.5  * ticksPerCM;
+const double yColorOffset         = 0    * ticksPerCM;
 const double distInCup      = cupSize / 3;
 const double paperWidthInCM = 29.7;
 const double paperHightInCM = 21;
@@ -37,14 +41,14 @@ const double paperWidthInRobotMoves = paperWidthInCM * ticksPerCM;
 const double paperHightInRobotMoves = paperHightInCM * ticksPerCM;
 final double paperWidth = min(paperWidthInRobotMoves, maxRobotWidth);
 final double paperHight = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
-const double xOffset    = 0;
-const double yOffset    = 0;
+const double xOffset      = 0;
+const double yOffset      = 0;
 const double marginFactor = 1.0;
 final double xMargin      = (paperWidth * (1 - marginFactor)) / 2;
 final double yMargin      = (paperHight * (1 - marginFactor)) / 2;
 
-const Offset waterOffset   = Offset(6 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceBetweenLastCupAndWater + xColorOffset, maxRobotHight - yColorOffset);
-const Offset cleanerOffset = Offset(5 * cupSize + 5 * spaceBetweenCups + xColorOffset, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner - yColorOffset);
+const Offset waterOffset  = Offset(6 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceLastCupAndWater + xColorOffset, maxRobotHight - yColorOffset);
+const Offset cleanOffset  = Offset(4 * cupSize + 4 * spaceBetweenCups + xColorOffset, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner - yColorOffset);
 final Offset yellowOffset = getColorOffset(0, 0);
 final Offset orangeOffset = getColorOffset(0, 1);
 final Offset redOffset    = getColorOffset(0, 2);
@@ -59,9 +63,9 @@ final Offset pinkOffset   = getColorOffset(1, 4);
 final Offset whiteOffset  = getColorOffset(1, 5);
 
 const Offset dummyOffset = Offset(-1, -1);
-final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint());
-final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint());
-final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint());
+final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint(), strokeWidth: lightWidth);
+final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint(), strokeWidth: lightWidth);
+final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint(), strokeWidth: lightWidth);
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");
@@ -80,7 +84,8 @@ class DrawingPoint {
   final PointType type;
   final Offset    location;
   final Paint     paint;
-  const DrawingPoint({required this.location, required this.type, required this.paint});
+  final double    strokeWidth;
+  const DrawingPoint({required this.location, required this.type, required this.paint, required this.strokeWidth});
   void printPoint() {
     debugPrint(location.dx.round().toString() + " " + location.dy.round().toString() + " " + type.toString());
   }
