@@ -53,7 +53,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         numOfCurColor++;
       }
       if (numOfCurColor > numPointForRefill) {
-        if (getLeftNumOfCur(pointsWithColor, curColor, i) > minRemainForRefill) {
+        if (getLeftNumOfCur(scaledPoints, curColor, i) > minRemainForRefill) {
           numOfCurColor = 0;
           addColor(pointsWithColor, curColor);
         }
