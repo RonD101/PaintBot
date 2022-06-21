@@ -92,6 +92,9 @@ void setup() {
   digitalWrite(LEFT_MOTOR_STEP_PIN, LOW);
   digitalWrite(RIGHT_MOTOR_STEP_PIN, LOW);
 
+  HomeDownState = digitalRead(DOWN_SENSOR_PIN);
+  HomeLeftState = digitalRead(LEFT_SENSOR_PIN);
+
   ESP32PWM::allocateTimer(0);
   myservo.setPeriodHertz(50);// Standard 50hz servo
   myservo.attach(SERVO_PIN, 1000, 2000);
