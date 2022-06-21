@@ -16,10 +16,9 @@ const int numPointForRefill  = 250;
 const int minRemainForRefill = 50;
 const int maxNumOfCompMoves  = 10000;
 
-const double opacity      = 0.8;
-const double defaultWidth = 5.1257142857142854;
-const double mediumWidth  = 8;
-const double thickWidth   = 13;
+const double opacity     = 0.8;
+const double lightWidth  = 5.1257142857142854;
+const double thickWidth  = 8;
 
 const double ticksPerCM = 100;
 const double maxRobotWidth        = 25   * ticksPerCM;
@@ -29,7 +28,9 @@ const double spaceBetweenCups     = 0.5  * ticksPerCM;
 const double spaceToCleaner       = 0.65 * ticksPerCM;
 const double cupSize              = 3    * ticksPerCM;
 const double waterCupSize         = 3.8  * ticksPerCM;
-const double distOfCleaner        = 6    * ticksPerCM;
+const double longDistClean        = 7    * ticksPerCM;
+const double shortDistClean       = 1    * ticksPerCM;
+
 const double palleteHight         = 7    * ticksPerCM;
 const double xColorOffset         = 0.5  * ticksPerCM;
 const double yColorOffset         = 0    * ticksPerCM;
@@ -62,9 +63,9 @@ final Offset pinkOffset   = getColorOffset(1, 4);
 final Offset whiteOffset  = getColorOffset(1, 5);
 
 const Offset dummyOffset = Offset(-1, -1);
-final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint(), strokeWidth: defaultWidth);
-final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint(), strokeWidth: defaultWidth);
-final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint(), strokeWidth: defaultWidth);
+final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint(), strokeWidth: lightWidth);
+final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint(), strokeWidth: lightWidth);
+final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint(), strokeWidth: lightWidth);
 
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");

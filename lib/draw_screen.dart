@@ -18,7 +18,7 @@ class DrawState extends State<DrawerScreen> {
   List<DrawingPoint> points  = [];
   Color selectedColor        = Colors.red;
   bool displayMenu           = false;
-  double strokeWidth         = defaultWidth;
+  double strokeWidth         = lightWidth;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,9 +175,8 @@ class DrawState extends State<DrawerScreen> {
 
   List<Widget> getWidthCircleList() {
     return [
-      createWidthCircle(defaultWidth, 16, 16), 
-      createWidthCircle(mediumWidth , 20, 20), 
-      createWidthCircle(thickWidth  , 24, 24)
+      createWidthCircle(lightWidth, 16, 16), 
+      createWidthCircle(thickWidth, 24, 24)
     ];
   }
 
@@ -254,7 +253,7 @@ class DrawState extends State<DrawerScreen> {
 
   void restartHandler() async {
     selectedColor = Colors.red;
-    strokeWidth   = defaultWidth;
+    strokeWidth   = lightWidth;
     selectedMenu  = MenuSelection.strokeWidth;
     displayMenu   = false;
     points.clear();

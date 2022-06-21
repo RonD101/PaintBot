@@ -60,9 +60,11 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       }
     }
   }
-  addWater(pointsWithColor); // every draw ends with water, and two cleans.
-  cleanBrush(pointsWithColor);
-  cleanBrush(pointsWithColor);
+  addWater(pointsWithColor); 
+  cleanBrush(pointsWithColor, longDistClean);
+  addWater(pointsWithColor); 
+  cleanBrush(pointsWithColor, longDistClean);
+  cleanBrush(pointsWithColor, longDistClean);
   return pointsWithColor;
 }
 
@@ -169,10 +171,8 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
       continue;
     }
     if (cur.type == PointType.dummyDown) {
-      if (nex.strokeWidth == defaultWidth) {
+      if (nex.strokeWidth == lightWidth) {
         robotMoves.add(RobotMove.servoLight);
-      } else if (nex.strokeWidth == mediumWidth) {
-        robotMoves.add(RobotMove.servoMiddle);
       } else if (nex.strokeWidth == thickWidth) {
         robotMoves.add(RobotMove.servoThick);
       } else {
