@@ -13,13 +13,14 @@ enum PointType     { regular, dummyUp, dummyDown }
 
 const int pulseCapacity      = 250;
 const int numPointForRefill  = 250;
-const int minRemainForRefill = 50;
+const int minRemainForRefill = 100;
 const int maxNumOfCompMoves  = 10000;
 
-const double opacity     = 0.8;
-const double lightWidth  = 5.1257142857142854;
-const double thickWidth  = 8;
-
+const double opacity    = 0.8;
+const double penLightCM = 0.2;
+const double penThickCM = 0.4;
+      double lightWidth = 0;
+      double thickWidth = 0;
 const double ticksPerCM = 100;
 const double maxRobotWidth        = 25   * ticksPerCM;
 const double maxRobotHight        = 19   * ticksPerCM;
@@ -123,6 +124,30 @@ class BotIcons {
   static const IconData color    = Icons.color_lens_outlined;
   static const IconData settings = Icons.settings_outlined;
   static const IconData test     = Icons.checklist_outlined;
+}
+
+class ScaleData {
+  double xScale = 0;
+  double yScale = 0;
+  double fScale = 0;
+  double xBase  = 0;
+  double yBase  = 0;
+  double statusBar = 0;
+  ScaleData(double width, double hight, this.statusBar) {
+    final double mHight = hight - (kBottomNavigationBarHeight + statusBar); // remove menu height
+    xScale = paperWidth / width;
+    yScale = paperHight / mHight;
+    fScale = min(xScale, yScale) * marginFactor;
+    if (fScale == xScale) {
+      xBase = xOffset + xMargin;
+      yBase = ((paperHight - mHight * fScale) / 2) + yOffset + yMargin;
+    } else {
+      xBase = ((paperWidth - width * fScale) / 2) + xOffset + xMargin;
+      yBase = yOffset + yMargin;
+    }
+    lightWidth = (penLightCM * ticksPerCM) / fScale;
+    thickWidth = (penThickCM * ticksPerCM) / fScale;
+  }
 }
 
 Offset getColorOffset(int row, int col) {

@@ -70,10 +70,9 @@ void sweepBrushInCup(List<DrawingPoint> points) {
   points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
   points.add(DrawingPoint(location: Offset(lastX            , lastY - distInCup), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
   points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
-  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
-  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
-  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
-  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
+  points.add(DrawingPoint(location: Offset(lastX + distInCup, lastY - distInCup), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
+  points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
+  points.add(DrawingPoint(location: Offset(lastX - distInCup, lastY - distInCup), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
   points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
 }
 
