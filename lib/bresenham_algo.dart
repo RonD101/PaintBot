@@ -3,24 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
-// scaled - DD rrr DU DD bbb DU
-List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, double width, double hight, double statusBar) {
-  hight -= (kBottomNavigationBarHeight + statusBar); // remove menu height
-  final double xScale = paperWidth / width;
-  final double yScale = paperHight / hight;
-  final double fScale = min(xScale, yScale) * marginFactor;
-  final double xBase;
-  final double yBase;
-  if (fScale == xScale) {
-    xBase = xOffset + xMargin;
-    yBase = ((paperHight - hight * fScale) / 2) + yOffset + yMargin;
-  } else {
-    xBase = ((paperWidth - width * fScale) / 2) + xOffset + xMargin;
-    yBase = yOffset + yMargin;
-  }
+// scaled - rrr DU DD r / ///r' //rr DU DD bbb DU
+List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, ScaleData scaleData) {
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
-    final Offset scaledP = Offset(xBase + cur.location.dx * fScale, yBase + (cur.location.dy - statusBar) * fScale);
+    final Offset scaledP = Offset(scaleData.xBase + cur.location.dx * scaleData.fScale, 
+                                  scaleData.yBase + (cur.location.dy - scaleData.statusBar) * scaleData.fScale);
     scaledPoints.add(DrawingPoint(location: scaledP, type: cur.type, paint: cur.paint, strokeWidth: cur.strokeWidth));
   }
   return scaledPoints;
@@ -55,6 +43,15 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
         if (getLeftNumOfCur(scaledPoints, curColor, i) > minRemainForRefill) {
           numOfCurColor = 0;
           addColor(pointsWithColor, curColor);
+          int startCopyIndex = 0; 
+          for (startCopyIndex = 0; startCopyIndex < 5; startCopyIndex++) {
+            if (scaledPoints[i - startCopyIndex].type != PointType.regular) {
+              break;
+            }
+          }
+          for (int j = 0; j <= startCopyIndex; j++) {
+            pointsWithColor.add(scaledPoints[i - startCopyIndex + j]);
+          }
         }
       }
     }

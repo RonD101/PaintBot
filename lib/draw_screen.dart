@@ -8,7 +8,10 @@ class DrawerScreen extends StatefulWidget {
   final double width;
   final double height;
   final double statusBar;
-  const DrawerScreen({Key? key, required this.width, required this.height, required this.statusBar}) : super(key: key);
+  late final ScaleData scaleData;
+  DrawerScreen({Key? key, required this.width, required this.height, required this.statusBar}) : super(key: key) {
+    scaleData = ScaleData(width, height, statusBar);
+  }
   @override
   DrawState createState() => DrawState();
 }
@@ -240,9 +243,9 @@ class DrawState extends State<DrawerScreen> {
           setState(() {
             displayMenu = false;
             if (selctedTest == BotIcons.square) {
-              squareTest();
+              squareTest(widget.scaleData);
             } else if (selctedTest == BotIcons.rightUp) {
-              upRightTest();
+              upRightTest(widget.scaleData);
             } else if (selctedTest == BotIcons.goHome) {
               goHomeTest();
             }
@@ -283,7 +286,7 @@ class DrawState extends State<DrawerScreen> {
       restartHandler();
       return;
     }
-    final List<DrawingPoint> scaledPoints     = getScaledPoints(points, widget.width, widget.height, widget.statusBar);
+    final List<DrawingPoint> scaledPoints     = getScaledPoints(points, widget.scaleData);
     final List<DrawingPoint> pointsWithColors = getPointsWithColors(scaledPoints);
     final List<DrawingPoint> smoothPoints     = getSmoothPoints(pointsWithColors);
     final List<DrawingPoint> bresenhamPoints  = globalBresenham(smoothPoints);
