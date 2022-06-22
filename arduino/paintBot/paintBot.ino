@@ -33,9 +33,9 @@
 #define LED_PIN 2
 #define PAYLOAD_SIZE 500
 #define SERVO_UP 20
-#define SERVO_LIGHT 135
-#define SERVO_MIDDLE 150
-#define SERVO_THICK 180
+#define SERVO_LIGHT 120
+#define SERVO_MIDDLE 130
+#define SERVO_THICK 150
 
 #ifdef WEB_DEBUG
   AsyncWebServer server(80);
