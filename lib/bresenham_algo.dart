@@ -42,7 +42,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       if (numOfCurColor > numPointForRefill) {
         if (getLeftNumOfCur(scaledPoints, curColor, i) > minRemainForRefill) {
           numOfCurColor = 0;
-          addColor(pointsWithColor, curColor);
+          addColor(pointsWithColor, curColor, newColor: false);
           int startCopyIndex = 0; 
           for (startCopyIndex = 0; startCopyIndex < 5; startCopyIndex++) {
             if (scaledPoints[i - startCopyIndex].type != PointType.regular) {

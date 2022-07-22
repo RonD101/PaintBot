@@ -12,7 +12,7 @@ enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
 const int pulseCapacity      = 250;
-const int numPointForRefill  = 250;
+const int numPointForRefill  = 500;
 const int minRemainForRefill = 100;
 const int maxNumOfCompMoves  = 10000;
 
@@ -114,16 +114,17 @@ class DrawingPainter extends CustomPainter {
 }
 
 class BotIcons {
-  static const IconData undo     = Icons.undo_outlined;
-  static const IconData restart  = Icons.restart_alt_outlined;
-  static const IconData upload   = Icons.upload_file_outlined;
-  static const IconData square   = Icons.crop_square_outlined;
-  static const IconData rightUp  = Icons.turn_right_sharp;
-  static const IconData goHome   = Icons.home_outlined;
-  static const IconData stroke   = Icons.line_weight;
-  static const IconData color    = Icons.color_lens_outlined;
-  static const IconData settings = Icons.settings_outlined;
-  static const IconData test     = Icons.checklist_outlined;
+  static const IconData undo        = Icons.undo_outlined;
+  static const IconData restart     = Icons.restart_alt_outlined;
+  static const IconData upload      = Icons.upload_file_outlined;
+  static const IconData square      = Icons.crop_square_outlined;
+  static const IconData rightUp     = Icons.turn_right_sharp;
+  static const IconData goHome      = Icons.home_outlined;
+  static const IconData stroke      = Icons.line_weight;
+  static const IconData color       = Icons.color_lens_outlined;
+  static const IconData settings    = Icons.settings_outlined;
+  static const IconData test        = Icons.checklist_outlined;
+  static const IconData calibration = Icons.aspect_ratio_outlined;
 }
 
 class ScaleData {

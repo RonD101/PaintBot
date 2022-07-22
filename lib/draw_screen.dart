@@ -193,6 +193,7 @@ class DrawState extends State<DrawerScreen> {
 
   List<Widget> getTestList() {
     return [
+      createTestOption(BotIcons.calibration), 
       createTestOption(BotIcons.square),
       createTestOption(BotIcons.rightUp), 
       createTestOption(BotIcons.goHome)
@@ -248,6 +249,8 @@ class DrawState extends State<DrawerScreen> {
               upRightTest(widget.scaleData);
             } else if (selctedTest == BotIcons.goHome) {
               goHomeTest();
+            } else if (selctedTest == BotIcons.calibration) {
+              calibrationTest();
             }
           });
         },

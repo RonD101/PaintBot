@@ -32,6 +32,20 @@ void goHomeTest() async {
   await startUploading(compressedMoves);
 }
 
+void calibrationTest() async {
+  List<CompMove> compressedMoves = [];
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 200, move: RobotMove.rightUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoLight));
+  compressedMoves.add(CompMove(num: 1000, move: RobotMove.right));
+  compressedMoves.add(CompMove(num: 1000, move: RobotMove.up));
+  compressedMoves.add(CompMove(num: 1000, move: RobotMove.left));
+  compressedMoves.add(CompMove(num: 1000, move: RobotMove.down));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
+  compressedMoves.add(CompMove(num: 1, move: RobotMove.goHome));
+  await startUploading(compressedMoves);
+}
+
 Future<void> uploadTest(List<DrawingPoint> points, ScaleData scaleData) async {
   final List<DrawingPoint> scaledPoints     = getScaledPoints(points, scaleData);
   final List<DrawingPoint> pointsWithColors = getPointsWithColors(scaledPoints);

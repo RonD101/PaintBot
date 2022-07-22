@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'app_utils.dart';
 
-void addColor(List<DrawingPoint> points, Color color) {
-  addWater(points);
-  cleanBrush(points, longDistClean);
+void addColor(List<DrawingPoint> points, Color color, { bool newColor = true }) {
+  if (newColor) {
+    addWater(points);
+    cleanBrush(points, longDistClean);
+  }
   addWater(points);
   cleanBrush(points, shortDistClean);
   points.add(upPoint);
