@@ -3,6 +3,12 @@ import 'package:paint_bot/app_utils.dart';
 import 'package:paint_bot/upload_handler.dart';
 import 'package:paint_bot/bresenham_algo.dart';
 
+// Black color
+//  --------
+//  |
+//  |
+//  | 
+//  |
 void upRightTest(ScaleData scaleData) async {
   List<DrawingPoint> points = [];
   points.add(downPoint);
@@ -13,6 +19,13 @@ void upRightTest(ScaleData scaleData) async {
   await uploadTest(points, scaleData); 
 }
 
+// Black color (this is actually a square)
+//  --------
+//  |      |
+//  |      |
+//  |      |
+//  |      |
+//  --------
 void squareTest(ScaleData scaleData) async {
   List<DrawingPoint> points = [];
   points.add(downPoint);
@@ -25,6 +38,7 @@ void squareTest(ScaleData scaleData) async {
   await uploadTest(points, scaleData);
 }
 
+// Just go home.
 void goHomeTest() async {
   List<CompMove> compressedMoves = [];
   compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
@@ -32,6 +46,10 @@ void goHomeTest() async {
   await startUploading(compressedMoves);
 }
 
+// This is a special test desined to calibrate the motors.
+// It creates a perfect 1000x1000 square and is used to measure how many ticks the motors need to make a single cm.
+// After results, change ticksPerCM in app_utils.dart
+// NOTICE - THIS TEST MUST BE DONE USING A PEN AND NOT THE BRUSH - IT WILL NOT GO TO WATER/COLORS.
 void calibrationTest() async {
   List<CompMove> compressedMoves = [];
   compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));

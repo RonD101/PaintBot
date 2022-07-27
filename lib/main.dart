@@ -22,8 +22,9 @@ class PaintBotApp extends StatelessWidget {
             home: FutureBuilder(
                 future: _fbApp,
                 builder: (context, snapshot) {
-                  final double width = MediaQuery.of(context).size.width;
-                  final double height = MediaQuery.of(context).size.height;
+                  // Stats for scaling.
+                  final double width     = MediaQuery.of(context).size.width;
+                  final double height    = MediaQuery.of(context).size.height;
                   final double statusBar = MediaQuery.of(context).viewPadding.top;
                   if (snapshot.hasError) {
                     return const Text("Something is wrong");

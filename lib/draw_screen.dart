@@ -47,6 +47,7 @@ class DrawState extends State<DrawerScreen> {
 
   GestureDetector drawUserInput(BuildContext context) {
     return GestureDetector(
+        // User adds more points
         onPanUpdate: (details) {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
@@ -61,6 +62,7 @@ class DrawState extends State<DrawerScreen> {
                 strokeWidth: strokeWidth));
           });
         },
+        // First touch of user
         onPanStart: (details) {
           setState(() {
             RenderBox renderBox = context.findRenderObject() as RenderBox;
@@ -75,6 +77,7 @@ class DrawState extends State<DrawerScreen> {
                 strokeWidth: strokeWidth));
           });
         },
+        // User lifts finger from screen after finishing a single line.
         onPanEnd: (details) {
           setState(() {
             points.add(upPoint);
@@ -83,6 +86,7 @@ class DrawState extends State<DrawerScreen> {
         child: CustomPaint(size: Size.infinite, painter: DrawingPainter(pointList: points)));
   }
 
+  // Widgets for menu bar.
   Row selectCurrentMenu() {
     if (selectedMenu == MenuSelection.strokeWidth) {
       return Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: getWidthCircleList());
@@ -262,12 +266,14 @@ class DrawState extends State<DrawerScreen> {
     strokeWidth   = lightWidth;
     selectedMenu  = MenuSelection.strokeWidth;
     displayMenu   = false;
+    // Set firebase to initial state.
     points.clear();
     await movesRef.remove();
     await numOfMovesRef.remove();
     await flagRef.set(UploadFlag.readyForPulse.index);
   }
 
+  // Remove a single line from draw (line - all points between finger down and finger up)
   void undoHandler() async {
     if (points.isNotEmpty) {
       points.removeLast();
@@ -283,6 +289,7 @@ class DrawState extends State<DrawerScreen> {
     }
   }
 
+  // Upload draw to firebase. Include the entire chain the points must go through before they go to firebase.
   void uploadHandler() async {
     displayMenu = false;
     if (points.length <= 3) {

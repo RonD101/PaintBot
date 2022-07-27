@@ -3,7 +3,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
-// 10cm/1000 = 10 * 10^-5 meters/tick left/right/up/down.
 enum RobotMove     { right, left, up, down, rightUp, rightDown, leftUp, leftDown, servoUp, servoThick, servoMiddle, servoLight, goHome }
 enum UploadFlag    { readyForPulse, readingPulse, startDraw, reuploadLast, sendNumOfMoves }
 enum PulseStatus   { nextPulse, reuploadPulse, finishedPulses }
@@ -11,43 +10,49 @@ enum MenuSelection { strokeWidth, brushColor, settingMenu, testMenu }
 enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
-const int pulseCapacity      = 250;
-const int numPointForRefill  = 400;
-const int minRemainForRefill = 100;
-const int maxNumOfCompMoves  = 10000;
+// Refill options
+const int numPointForRefill  = 400; // Change for smaller/larger number of points needed for refill.
+const int minRemainForRefill = 100; // Dont refill if you have only small amount of points left.
 
-const double opacity    = 0.8;
-const double penLightCM = 0.2;
-const double penThickCM = 0.4;
-      double lightWidth = 0;
-      double thickWidth = 0;
-const double ticksPerCM = 100;
-const double maxRobotWidth        = 25   * ticksPerCM;
-const double maxRobotHight        = 19   * ticksPerCM;
-const double spaceLastCupAndWater = 1    * ticksPerCM;
+// Real painting options
+const double opacity        = 0.8; // Mimic real brush color to screen.
+const double penLightCM     = 0.2; // Adjust for real brush width
+const double penThickCM     = 0.4;
+      double lightWidth     = 0;
+      double thickWidth     = 0;
+const double paperWidthInCM = 29.7;
+const double paperHightInCM = 21;
+
+// Robot configs
+const double ticksPerCM    = 100;               // Number of robot moves to achive 1 cm.
+const double maxRobotWidth = 25 * ticksPerCM; // Maximum size of width
+const double maxRobotHight = 19   * ticksPerCM; // Maximum size of height
+
+// Spacing and offsets configs
+const double spaceLastCupAndWater = 1    * ticksPerCM; 
 const double spaceBetweenCups     = 0.5  * ticksPerCM;
 const double spaceToCleaner       = 0.65 * ticksPerCM;
 const double cupSize              = 3    * ticksPerCM;
 const double waterCupSize         = 3.8  * ticksPerCM;
 const double longDistClean        = 7    * ticksPerCM;
 const double shortDistClean       = 1    * ticksPerCM;
-
 const double palleteHight         = 7    * ticksPerCM;
 const double xColorOffset         = 0.4  * ticksPerCM;
 const double yColorOffset         = 0    * ticksPerCM;
-const double distInCup      = 0.45 * cupSize;
-const double paperWidthInCM = 29.7;
-const double paperHightInCM = 21;
+const double distInCup            = 0.45 * cupSize;
+
+// Scaling configs
 const double paperWidthInRobotMoves = paperWidthInCM * ticksPerCM;
 const double paperHightInRobotMoves = paperHightInCM * ticksPerCM;
-final double paperWidth = min(paperWidthInRobotMoves, maxRobotWidth);
-final double paperHight = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
+final double paperWidth   = min(paperWidthInRobotMoves, maxRobotWidth);
+final double paperHight   = min(paperHightInRobotMoves, maxRobotHight - palleteHight);
 const double xOffset      = 0;
 const double yOffset      = 0;
 const double marginFactor = 1.0;
 final double xMargin      = (paperWidth * (1 - marginFactor)) / 2;
 final double yMargin      = (paperHight * (1 - marginFactor)) / 2;
 
+// Paint and water offsets
 const Offset waterOffset  = Offset(6 * cupSize + 5 * spaceBetweenCups + waterCupSize / 2 + spaceLastCupAndWater + xColorOffset, maxRobotHight - yColorOffset);
 const Offset cleanOffset  = Offset(4 * cupSize + 4 * spaceBetweenCups + xColorOffset, maxRobotHight - 1.5 * cupSize - spaceBetweenCups - spaceToCleaner - yColorOffset);
 final Offset yellowOffset = getColorOffset(0, 0);
@@ -63,11 +68,14 @@ final Offset dblueOffset  = getColorOffset(1, 3);
 final Offset pinkOffset   = getColorOffset(1, 4);
 final Offset whiteOffset  = getColorOffset(1, 5);
 
-const Offset dummyOffset = Offset(-1, -1);
-final DrawingPoint upPoint    = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint(), strokeWidth: lightWidth);
-final DrawingPoint downPoint  = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint(), strokeWidth: lightWidth);
-final DrawingPoint startPoint = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint(), strokeWidth: lightWidth);
+const Offset       dummyOffset = Offset(-1, -1);
+final DrawingPoint upPoint     = DrawingPoint(location: dummyOffset, type: PointType.dummyUp, paint: Paint(), strokeWidth: lightWidth);
+final DrawingPoint downPoint   = DrawingPoint(location: dummyOffset, type: PointType.dummyDown, paint: Paint(), strokeWidth: lightWidth);
+final DrawingPoint startPoint  = DrawingPoint(location: const Offset(0, maxRobotHight), type: PointType.regular, paint: Paint(), strokeWidth: lightWidth);
 
+// Firebase and esp32.
+const int pulseCapacity     = 250;   // Each pulse to firebase contains 250 pairs of data - move and num.
+const int maxNumOfCompMoves = 10000; // Due to esp32 memory limitations.
 final DatabaseReference numOfMovesRef = FirebaseDatabase.instance.ref("NumOfMoves");
 final DatabaseReference movesRef      = FirebaseDatabase.instance.ref("RobotMoves");
 final DatabaseReference flagRef       = FirebaseDatabase.instance.ref("Flag");
@@ -103,8 +111,7 @@ class DrawingPainter extends CustomPainter {
       if (curLoc != dummyOffset && nexLoc != dummyOffset) {
         canvas.drawLine(curLoc, nexLoc, pointList[i].paint);
       } else if (curLoc != dummyOffset && nexLoc == dummyOffset) {
-        canvas.drawPoints(
-            PointMode.points, [curLoc, Offset(curLoc.dx + 0.1, curLoc.dy + 0.1)], pointList[i].paint);
+        canvas.drawPoints(    PointMode.points, [curLoc, Offset(curLoc.dx + 0.1, curLoc.dy + 0.1)], pointList[i].paint);
       }
     }
   }

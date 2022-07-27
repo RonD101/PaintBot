@@ -39,10 +39,12 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       if (cur.type == PointType.regular) {
         numOfCurColor++;
       }
+      // Dont refill if you have small amount left.
       if (numOfCurColor > numPointForRefill) {
         if (getLeftNumOfCur(scaledPoints, curColor, i) > minRemainForRefill) {
           numOfCurColor = 0;
           addColor(pointsWithColor, curColor, false);
+          // Repaint last 5 points to compensate for brush angel.
           int startCopyIndex = 0; 
           for (startCopyIndex = 0; startCopyIndex < 5; startCopyIndex++) {
             if (scaledPoints[i - startCopyIndex].type != PointType.regular) {
@@ -56,6 +58,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       }
     }
   }
+  // Last cleaning before goHome.
   addWater(pointsWithColor);
   cleanBrush(pointsWithColor, longDistClean);
   addWater(pointsWithColor);
@@ -64,6 +67,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
   return pointsWithColor;
 }
 
+// Creates straight lines between logistic points - for example between water and cleaner and paint and first point.
 // smooth - s0
 //          DU DD (s0x, w0y)w0w1w2
 //          DU DD (w2x, r0y)r0r1r2
@@ -95,6 +99,7 @@ List<DrawingPoint> getSmoothPoints(List<DrawingPoint> pointsWithColors) {
   return smoothPoints;
 }
 
+// Converts entire points to bresenham moves.
 // bresenham - DU
 //             B(s0, (s0x, w0y)) B((s0x, w0y), w0) DD B(w0, w1) B(w1, w2) DU
 //             B(w2, (w2x, r0y)) B((w2x, r0y), r0) DD B(r0, r1) B(r1, r2) DU
@@ -133,8 +138,8 @@ List<DrawingPoint> globalBresenham(List<DrawingPoint> smoothPoints) {
   return bresenhamPoints;
 }
 
-List<DrawingPoint> localBresenham(
-    int x0, int y0, int x1, int y1, double width) {
+// Actual bresenham algorithm between two points.
+List<DrawingPoint> localBresenham(int x0, int y0, int x1, int y1, double width) {
   List<DrawingPoint> bresenhamPoints = [];
   var dx = (x1 - x0).abs();
   var dy = (y1 - y0).abs();
@@ -159,6 +164,7 @@ List<DrawingPoint> localBresenham(
   return bresenhamPoints;
 }
 
+// Convert two bresenham points to a single robot move.
 // robot - SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU mmm SD mmm SU GH
 List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
   List<RobotMove> robotMoves = [];
@@ -192,6 +198,7 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
       robotMoves.add(RobotMove.down);
     } else if (curLoc.x == nexLoc.x && curLoc.y > nexLoc.y) {
       robotMoves.add(RobotMove.up);
+    // Diagonal moves must be double because of robot configurations.
     } else if (curLoc.x < nexLoc.x && curLoc.y < nexLoc.y) {
       robotMoves.add(RobotMove.rightDown);
       robotMoves.add(RobotMove.rightDown);
@@ -211,6 +218,7 @@ List<RobotMove> getRobotMoves(List<DrawingPoint> bresenhamPoints) {
   return robotMoves;
 }
 
+// CompMove - for example, instead of sending 16 right, we send 16, right - by doing that we dramatically compress the data we send to the robot.
 List<CompMove> getCompressedMoves(List<RobotMove> robotMoves) {
   List<CompMove> compressedMoves = [];
   for (RobotMove m in robotMoves) {
@@ -223,6 +231,7 @@ List<CompMove> getCompressedMoves(List<RobotMove> robotMoves) {
   return compressedMoves;
 }
 
+// Return number of points left to decide if we refill or not.
 int getLeftNumOfCur(List<DrawingPoint> points, Color color, int curPoint) {
   int leftNum = 0;
   for (int i = curPoint; i < points.length; i++) {
