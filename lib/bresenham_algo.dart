@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:paint_bot/brush_handler.dart';
 import 'app_utils.dart';
 
-// scaled - rrr DU DD r / ///r' //rr DU DD bbb DU
+// scaled - rrr DU DD rrr DU DD bbb DU
 List<DrawingPoint> getScaledPoints(List<DrawingPoint> points, ScaleData scaleData) {
   List<DrawingPoint> scaledPoints = [];
   for (var cur in points) {
@@ -20,14 +20,14 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
   List<DrawingPoint> pointsWithColor = [];
   pointsWithColor.add(startPoint);
   Color curColor = scaledPoints[1].paint.color; // first color
-  addColor(pointsWithColor, curColor);
+  addColor(pointsWithColor, curColor, true);
   for (int i = 1; i < scaledPoints.length - 1; i++) {
     final DrawingPoint cur = scaledPoints[i];
     final DrawingPoint nex = scaledPoints[i + 1];
     if (cur.type == PointType.dummyUp && nex.type == PointType.dummyDown) {
       if (curColor != scaledPoints[i + 2].paint.color) {
         curColor = scaledPoints[i + 2].paint.color;
-        addColor(pointsWithColor, curColor);
+        addColor(pointsWithColor, curColor, true);
         numOfCurColor = 0;
       } else {
         pointsWithColor.add(cur);
@@ -42,7 +42,7 @@ List<DrawingPoint> getPointsWithColors(List<DrawingPoint> scaledPoints) {
       if (numOfCurColor > numPointForRefill) {
         if (getLeftNumOfCur(scaledPoints, curColor, i) > minRemainForRefill) {
           numOfCurColor = 0;
-          addColor(pointsWithColor, curColor, newColor: false);
+          addColor(pointsWithColor, curColor, false);
           int startCopyIndex = 0; 
           for (startCopyIndex = 0; startCopyIndex < 5; startCopyIndex++) {
             if (scaledPoints[i - startCopyIndex].type != PointType.regular) {

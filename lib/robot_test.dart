@@ -35,7 +35,7 @@ void goHomeTest() async {
 void calibrationTest() async {
   List<CompMove> compressedMoves = [];
   compressedMoves.add(CompMove(num: 1, move: RobotMove.servoUp));
-  compressedMoves.add(CompMove(num: 200, move: RobotMove.rightUp));
+  compressedMoves.add(CompMove(num: 1700, move: RobotMove.rightUp));
   compressedMoves.add(CompMove(num: 1, move: RobotMove.servoLight));
   compressedMoves.add(CompMove(num: 1000, move: RobotMove.right));
   compressedMoves.add(CompMove(num: 1000, move: RobotMove.up));

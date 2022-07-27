@@ -238,23 +238,23 @@ class DrawState extends State<DrawerScreen> {
         child: Icon(selctedSetting));
   }
 
-  Widget createTestOption(IconData selctedTest) {
+  Widget createTestOption(IconData selectedTest) {
     return GestureDetector(
         onTap: () {
           setState(() {
             displayMenu = false;
-            if (selctedTest == BotIcons.square) {
+            if (selectedTest == BotIcons.square) {
               squareTest(widget.scaleData);
-            } else if (selctedTest == BotIcons.rightUp) {
+            } else if (selectedTest == BotIcons.rightUp) {
               upRightTest(widget.scaleData);
-            } else if (selctedTest == BotIcons.goHome) {
+            } else if (selectedTest == BotIcons.goHome) {
               goHomeTest();
-            } else if (selctedTest == BotIcons.calibration) {
+            } else if (selectedTest == BotIcons.calibration) {
               calibrationTest();
             }
           });
         },
-        child: Icon(selctedTest));
+        child: Icon(selectedTest));
   }
 
   void restartHandler() async {

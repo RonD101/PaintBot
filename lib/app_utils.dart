@@ -12,7 +12,7 @@ enum TestSelection { square, rightUpAllWay, goHome }
 enum PointType     { regular, dummyUp, dummyDown }
 
 const int pulseCapacity      = 250;
-const int numPointForRefill  = 500;
+const int numPointForRefill  = 400;
 const int minRemainForRefill = 100;
 const int maxNumOfCompMoves  = 10000;
 
@@ -33,7 +33,7 @@ const double longDistClean        = 7    * ticksPerCM;
 const double shortDistClean       = 1    * ticksPerCM;
 
 const double palleteHight         = 7    * ticksPerCM;
-const double xColorOffset         = 0.5  * ticksPerCM;
+const double xColorOffset         = 0.4  * ticksPerCM;
 const double yColorOffset         = 0    * ticksPerCM;
 const double distInCup      = 0.45 * cupSize;
 const double paperWidthInCM = 29.7;
@@ -143,7 +143,7 @@ class ScaleData {
       xBase = xOffset + xMargin;
       yBase = ((paperHight - mHight * fScale) / 2) + yOffset + yMargin;
     } else {
-      xBase = ((paperWidth - width * fScale) / 2) + xOffset + xMargin;
+      xBase = ((paperWidth -  width * fScale) / 2) + xOffset + xMargin;
       yBase = yOffset + yMargin;
     }
     lightWidth = (penLightCM * ticksPerCM) / fScale;

@@ -1,9 +1,0 @@
-1. opcaity - change value (currently 1.0) according to actual colors on paper.
-2. animations - add animation for opening/closing menu.
-4. Create a list of actual points that will be sent to robot, this includes the following:
-    - Figure out the minimum distance of detectable changes in robot and delete points closer than that minimum.
-    - Add proxy points to clean, change color or reloading (this includes how much until reloaing is needed - accorind to certain num of points).
-    - Add a starting point - default robot location.
-5. Discuss app logo.
-6. FireBase - connection with ESP32
-7. Add penUp and penDown to RobotMove
