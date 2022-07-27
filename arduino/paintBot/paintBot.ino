@@ -11,10 +11,8 @@
 
 
 // Insert your network credentials
-#define WIFI_SSID "TechPublic"
-#define WIFI_PASSWORD ""
-//#define WIFI_SSID_2 "RonDiPhone"
-//#define WIFI_PASSWORD_2 "12345678"
+#define WIFI_SSID "ICST"
+#define WIFI_PASSWORD "arduino123"
 // Insert Firebase project API Key
 #define API_KEY "AIzaSyAIVdnB_mJA6_ZV5G9ctjWO7aQRLJk_DjQ"
 // Insert RTDB URLefine the RTDB URL */
@@ -58,7 +56,7 @@ bool shouldSwitchRightMotorDir = false;
 bool shouldStepLeftMotor = false;
 bool shouldStepRightMotor = false;
 
-int counter = 0;
+int pulseCounter = 0;
 int HomeLeftState = 0;
 int HomeDownState = 0;
 int timeBetweenReads = 3000;
@@ -71,11 +69,11 @@ int* movesArray;
 bool finishedDraw = true;
 
 void setup() {
-  // Motot 1
+  // Left Motor
   pinMode(LEFT_MOTOR_DIR_PIN, OUTPUT);    // Direction Pin
   pinMode(LEFT_MOTOR_STEP_PIN, OUTPUT);    // Step pin
   pinMode(LEFT_MOTOR_ENABLE_PIN, OUTPUT);    // Enable pin
-  // Motor 2
+  // Right Motor
   pinMode(RIGHT_MOTOR_DIR_PIN, OUTPUT);    // Direction Pin
   pinMode(RIGHT_MOTOR_STEP_PIN, OUTPUT);    // Step pin
   pinMode(RIGHT_MOTOR_ENABLE_PIN, OUTPUT);    // Enable pin
@@ -174,8 +172,8 @@ void loop() {
   if (flag == 2 && finishedDraw) {
     finishedDraw = false;
     debugPrint("Amount of pulse got = ");
-    debugPrintln(counter);
-    counter = 0;
+    debugPrintln(pulseCounter);
+    pulseCounter = 0;
     debugPrint("Start Draw ");
     debugPrint(NumOfMoves);
     debugPrintln(" points!");
@@ -246,10 +244,10 @@ void loop() {
       for (size_t i = 0; i < arr.size() - 1; i++)
       {
         arr.get(currValue, i + 1);
-        movesArray[PAYLOAD_SIZE * counter + i] = currValue.to<int>();
+        movesArray[PAYLOAD_SIZE * pulseCounter + i] = currValue.to<int>();
       }
       debugPrintln("Finished load!");
-      counter += 1;
+      pulseCounter += 1;
     } else {
       printDebugErrors();
       bool writtenError = false;
@@ -282,7 +280,8 @@ void printDebugErrors() {
   debugPrintln("REASON: " + fbdo.errorReason());
 }
 
-void mainLoop() {
+// This function is for testing the movment for all directions.
+void testLoop() {
   int timeLap = 1000;
   for(int i = 0; i < 10 * timeLap; i++) {
     if (i < timeLap)
