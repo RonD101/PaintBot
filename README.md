@@ -62,3 +62,5 @@ Arduino code can be found in arduino/paintBot.ino - contains the entire code nee
     - List of 3d-printed plastic items
     - Kappa base board
     - Paper clips and water color paper
+  
+    Link to firebase - https://console.firebase.google.com/u/0/project/paintbot-a1067/database/paintbot-a1067-default-rtdb/data
