@@ -1,12 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'app_utils.dart';
 
+// Notice - all these uploads needs to be done in sync with robot - the process is as follows:
+// Send numOfMoves, flag = 4
+// Recieve flag = 0
+// Send pulse, flag = 1
+// Recieve flag = 0
+// Send next pulse, flag = 1
+// Recieve flag = 0
+// Finished pulses, set flag = 2
+// Robot start painting, after done, flag = 0.
+// If error occurs, flag = 3 and app reupload cur pulse.
+
 Future<void> startUploading(List<CompMove> compressedMoves) async {
   final int numOfMoves = compressedMoves.length;
   if (numOfMoves > maxNumOfCompMoves) {
     debugPrint("Painting too large!!!");
     return;
   }
+  // Rounding num of pulses - for example, for 1200 points, we need 3 pulses. The last one will contain 200.
   int numOfPulses = numOfMoves ~/ pulseCapacity;
   if (numOfMoves % pulseCapacity != 0) {
     numOfPulses++;
@@ -18,6 +30,7 @@ Future<void> startUploading(List<CompMove> compressedMoves) async {
     if (pulseStatus == PulseStatus.finishedPulses) {
       return;
     }
+    // When robot got an error, reupload current pulse.
     if (pulseStatus == PulseStatus.reuploadPulse) {
       curPulse--;
     }
@@ -31,6 +44,7 @@ Future<void> startUploading(List<CompMove> compressedMoves) async {
   }
 }
 
+// First thing, so robot will know how big the array it needs for allocation.
 Future<void> uploadNumOfMoves(int numOfMoves) async {
   numOfMovesRef.set(numOfMoves * 2);
   movesRef.remove();

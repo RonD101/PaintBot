@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_utils.dart';
 
 void addColor(List<DrawingPoint> points, Color color, bool newColor) {
+  // Actual cleaning is done only we this is a new color (not refill)
   if (newColor) {
     addWater(points);
     cleanBrush(points, longDistClean);
@@ -60,6 +61,7 @@ void addWater(List<DrawingPoint> points) {
   sweepBrushInCup(points);
 }
 
+// Inside water or paint - go right, left, right, left, up, down, and diagonal and do it twice.
 void sweepBrushInCup(List<DrawingPoint> points) {
   final double lastX = points.last.location.dx;
   final double lastY = points.last.location.dy;
@@ -78,7 +80,9 @@ void sweepBrushInCup(List<DrawingPoint> points) {
   points.add(DrawingPoint(location: Offset(lastX            , lastY), type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
 }
 
+// Moves the brush to the cleaner after water.
 void cleanBrush(List<DrawingPoint> points, double distClean) {
+  // distClean is small when we want to remove excess water and large when we actually want to clean.
   points.add(upPoint);
   points.add(downPoint);
   points.add(DrawingPoint(location: cleanOffset, type: PointType.regular, paint: Paint(), strokeWidth: thickWidth));
