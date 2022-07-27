@@ -11,9 +11,9 @@ This is a project done by Ron Dahan, Renen Kantor and Eyal Attiya with the super
 ## The core code for the app is in the lib folder containing the following files:
     - app_utils.dart: constants and define for the application - including distance from pallete, ticksPerCM etc.
     - bresenham_algo.dart: implementation of bresenham algorithm - contains the entire conversion from points on screen to composite moves.
-    - brush_handler: implementation of colors, water and cleaner code
-    - main.dart: launcher for app
-    - robot_test.dart: followin tests are provided - calibration, square, right up and go home feature.
+    - brush_handler: implementation of colors, water and cleaner code.
+    - main.dart: launcher for app.
+    - robot_test.dart: following tests are provided - calibration, square, right up and go home feature.
     - upload_handler.dart: handles communication with firebase and arduino.
 
 ## Flow of application is as follows:
