@@ -63,4 +63,6 @@ Arduino code can be found in arduino/paintBot.ino - contains the entire code nee
     - Kappa base board
     - Paper clips and water color paper
   
-    Link to firebase - https://console.firebase.google.com/u/0/project/paintbot-a1067/database/paintbot-a1067-default-rtdb/data
+  [3D model of the robot](https://cad.onshape.com/documents/a9e5ab848728e77d5ec48440/w/8ee04dd333476aa755ff6ea1/e/f8a0d761a7cd78e697c080f0)
+  
+  [Firebase of the app](https://console.firebase.google.com/u/0/project/paintbot-a1067/database/paintbot-a1067-default-rtdb/data)
