@@ -2,6 +2,11 @@
 
 This is a project done by Ron Dahan, Renen Kantor and Eyal Attiya with the supervision of Harel Vaknin and Tom Sofer as part of the IoT course at the Technion.
 
+## How to run:
+    - Clone code
+    - Run flutter clean
+    - Run flutter build apk
+
 ## Main features:
     - User paints on the app and the robot draws it on paper with water colors.
     - The user can choose from a variaty of colors and two differenet widths.
